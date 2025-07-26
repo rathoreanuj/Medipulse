@@ -1,15 +1,13 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://medipulse-backend-mapxqbsuv-anuj-rathores-projects-83c4a960.vercel.app';
+const API_BASE_URL = 'https://medipulse-backend.onrender.com/';
 
-// Create axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
   withCredentials: true
 });
 
-// Request interceptor to add JWT token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('adminToken');
@@ -23,7 +21,6 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle token expiration
 api.interceptors.response.use(
   (response) => response,
   (error) => {
