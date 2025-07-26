@@ -9,7 +9,7 @@
 </div>
 
 <div align="center">
-  <h3>🚀 A modern, full-stack healthcare appointment booking platform</h3>
+  <h3>🚀 A modern, full-stack Doctor appointment booking platform</h3>
   <p>Streamlining healthcare access with intuitive appointment scheduling and management</p>
 </div>
 
