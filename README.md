@@ -1,4 +1,4 @@
-# 🏥 Medipulse - Healthcare Appointment Booking System
+# 🏥 Medipulse - Doctor Appointment Booking System
 
 <div align="center">
   <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
@@ -9,7 +9,7 @@
 </div>
 
 <div align="center">
-  <h3>🚀 A modern, full-stack healthcare appointment booking platform</h3>
+  <h3>🚀 A modern, full-stack Doctor appointment booking platform</h3>
   <p>Streamlining healthcare access with intuitive appointment scheduling and management</p>
 </div>
 
