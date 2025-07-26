@@ -12,7 +12,6 @@ const port = process.env.PORT || 4000
 connectDB()
 connectCloudinary()
 
-app.use(express.json())
 app.use(cors({
   origin: [
     "https://medipulse-frontend-qsccc4qjo-anuj-rathores-projects-83c4a960.vercel.app",
@@ -24,12 +23,14 @@ app.use(cors({
   credentials: true
 }))
 
+app.use(express.json())
+
 app.use("/api/user", userRouter)
 app.use("/api/admin", adminRouter)
 app.use("/api/doctor", doctorRouter)
 
 app.get("/", (req, res) => {
-  res.send("API Working")
+  res.status(200).json({ message: "MediPulse API is running successfully." });
 });
 
 app.listen(port, () => console.log(`Server started on http://localhost:${port}`))
