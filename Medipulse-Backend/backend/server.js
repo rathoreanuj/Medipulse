@@ -14,8 +14,8 @@ connectCloudinary()
 
 app.use(cors({
   origin: [
-    "https://medipulse-frontend-qsccc4qjo-anuj-rathores-projects-83c4a960.vercel.app",
-    "https://medipulse-admin-332abkp2e-anuj-rathores-projects-83c4a960.vercel.app",
+    "https://medipulse-frontend.onrender.com",
+    "https://medipulse-admin.onrender.com",
     "http://localhost:3000",
     "http://localhost:5173",
     "http://localhost:5174"
