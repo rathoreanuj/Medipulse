@@ -457,7 +457,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **v1.0.0** - Initial release with core functionality
 - **v1.1.0** - Added admin dashboard and doctor management
 - **v1.2.0** - Enhanced UI/UX and mobile responsiveness
-- **v1.3.0** - Removed payment integration, improved security
 
 ---
 
