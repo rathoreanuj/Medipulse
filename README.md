@@ -13,6 +13,18 @@
   <p>Streamlining healthcare access with intuitive appointment scheduling and management</p>
 </div>
 
+<div align="center">
+
+### 🔗 **Live Demo**
+
+| Application | URL | Description |
+|-------------|-----|-------------|
+| 🏥 **Patient Portal** | [https://medipulse-frontend.onrender.com/](https://medipulse-frontend.onrender.com/) | Book appointments, manage profile, view medical history |
+| ⚙️ **Admin & Doctor Portal** | [https://medipulse-admin.onrender.com/](https://medipulse-admin.onrender.com/) | Admin & Doctor dashboard for system management |
+| 🔧 **Backend API** | [https://medipulse-backend.onrender.com/](https://medipulse-backend.onrender.com/) | RESTful API powering the application |
+
+</div>
+
 ---
 
 ## 📋 Table of Contents
