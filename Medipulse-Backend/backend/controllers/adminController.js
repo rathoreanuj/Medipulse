@@ -110,11 +110,37 @@ const adminDashboard = async (req, res) => {
     }
 };
 
+// Fix completed appointments that show unpaid status
+const fixCompletedAppointments = async (req, res) => {
+    try {
+        const result = await appointmentModel.updateMany(
+            {
+                isCompleted: true,
+                payment: false,
+                cancelled: false
+            },
+            {
+                $set: { payment: true }
+            }
+        );
+        
+        res.json({ 
+            success: true, 
+            message: `Fixed ${result.modifiedCount} completed appointment(s)`,
+            count: result.modifiedCount
+        });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
 export {
     loginAdmin,
     appointmentsAdmin,
     appointmentCancel,
     addDoctor,
     allDoctors,
-    adminDashboard
+    adminDashboard,
+    fixCompletedAppointments
 };
