@@ -1,8 +1,9 @@
-import React, { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 import { assets } from '../assets/assets';
 import RelatedDoctors from '../components/RelatedDoctors';
+import StripeCheckout from '../components/StripeCheckout';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
@@ -15,6 +16,10 @@ const Appointment = () => {
     const [docSlots, setDocSlots] = useState([]);
     const [slotIndex, setSlotIndex] = useState(0);
     const [slotTime, setSlotTime] = useState('');
+    const [paymentMode, setPaymentMode] = useState('offline');
+    const [showStripeCheckout, setShowStripeCheckout] = useState(false);
+    const [clientSecret, setClientSecret] = useState('');
+    const [appointmentId, setAppointmentId] = useState('');
 
     const navigate = useNavigate();
 
@@ -76,6 +81,11 @@ const Appointment = () => {
             return navigate('/login');
         }
 
+        if (!slotTime) {
+            toast.warning('Please select a time slot');
+            return;
+        }
+
         const date = docSlots[slotIndex][0].datetime;
         let day = date.getDate();
         let month = date.getMonth() + 1;
@@ -83,18 +93,52 @@ const Appointment = () => {
         const slotDate = day + "_" + month + "_" + year;
 
         try {
-            const { data } = await axios.post(backendUrl + '/api/user/book-appointment', { docId, slotDate, slotTime }, { headers: { token } });
-            if (data.success) {
-                toast.success(data.message);
-                getDoctosData();
-                navigate('/my-appointments');
+            if (paymentMode === 'online') {
+                // Create payment intent for online payment
+                const { data } = await axios.post(
+                    backendUrl + '/api/payment/create-payment-intent',
+                    { docId, slotDate, slotTime },
+                    { headers: { token } }
+                );
+
+                if (data.success) {
+                    setClientSecret(data.clientSecret);
+                    setAppointmentId(data.appointmentId);
+                    setShowStripeCheckout(true);
+                } else {
+                    toast.error(data.message);
+                }
             } else {
-                toast.error(data.message);
+                // Book appointment with offline payment
+                const { data } = await axios.post(
+                    backendUrl + '/api/user/book-appointment',
+                    { docId, slotDate, slotTime, paymentMode: 'offline' },
+                    { headers: { token } }
+                );
+
+                if (data.success) {
+                    toast.success(data.message);
+                    getDoctosData();
+                    navigate('/my-appointments');
+                } else {
+                    toast.error(data.message);
+                }
             }
         } catch (error) {
             console.log(error);
             toast.error(error.message);
         }
+    };
+
+    const handlePaymentSuccess = () => {
+        setShowStripeCheckout(false);
+        getDoctosData();
+        navigate('/my-appointments');
+    };
+
+    const handlePaymentCancel = () => {
+        setShowStripeCheckout(false);
+        toast.info('Payment cancelled');
     };
 
     useEffect(() => {
@@ -165,12 +209,53 @@ const Appointment = () => {
                     ))}
                 </div>
 
+                {/* Payment Mode Selection */}
+                <div className='mt-6'>
+                    <p className='font-medium text-gray-700 mb-3'>Select Payment Mode</p>
+                    <div className='flex gap-4'>
+                        <label className='flex items-center gap-2 cursor-pointer'>
+                            <input
+                                type='radio'
+                                name='paymentMode'
+                                value='offline'
+                                checked={paymentMode === 'offline'}
+                                onChange={(e) => setPaymentMode(e.target.value)}
+                                className='w-4 h-4'
+                            />
+                            <span className='text-gray-700'>Pay at Clinic (Cash)</span>
+                        </label>
+                        <label className='flex items-center gap-2 cursor-pointer'>
+                            <input
+                                type='radio'
+                                name='paymentMode'
+                                value='online'
+                                checked={paymentMode === 'online'}
+                                onChange={(e) => setPaymentMode(e.target.value)}
+                                className='w-4 h-4'
+                            />
+                            <span className='text-gray-700'>Pay Online (Card)</span>
+                        </label>
+                    </div>
+                </div>
+
                 <button onClick={bookAppointment} className='bg-primary text-white text-sm font-light px-20 py-3 rounded-full my-6'>
                     Book an appointment
                 </button>
             </div>
 
             <RelatedDoctors speciality={docInfo.speciality} docId={docId} />
+
+            {/* Stripe Checkout Modal */}
+            {showStripeCheckout && (
+                <StripeCheckout
+                    clientSecret={clientSecret}
+                    appointmentId={appointmentId}
+                    onSuccess={handlePaymentSuccess}
+                    onCancel={handlePaymentCancel}
+                    backendUrl={backendUrl}
+                    token={token}
+                />
+            )}
         </div>
     ) : null;
 };

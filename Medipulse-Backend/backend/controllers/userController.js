@@ -84,7 +84,7 @@ const updateProfile = async (req, res) => {
 
 const bookAppointment = async (req, res) => {
     try {
-        const { userId, docId, slotDate, slotTime } = req.body;
+        const { userId, docId, slotDate, slotTime, paymentMode } = req.body;
         const docData = await doctorModel.findById(docId).select("-password");
         if (!docData.available) {
             return res.json({ success: false, message: 'Doctor Not Available' });
@@ -110,12 +110,13 @@ const bookAppointment = async (req, res) => {
             amount: docData.fees,
             slotTime,
             slotDate,
-            date: Date.now()
+            date: Date.now(),
+            payment: paymentMode === 'online' ? false : false // Will be updated after online payment
         };
         const newAppointment = new appointmentModel(appointmentData);
         await newAppointment.save();
         await doctorModel.findByIdAndUpdate(docId, { slots_booked });
-        res.json({ success: true, message: 'Appointment Booked' });
+        res.json({ success: true, message: 'Appointment Booked', appointmentId: newAppointment._id });
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: error.message });
