@@ -28,25 +28,6 @@
 
 ---
 
-## 📋 Table of Contents
-
-- [🌟 Features](#-features)
-- [🛠️ Tech Stack](#️-tech-stack)
-- [📁 Project Structure](#-project-structure)
-- [⚡ Quick Start](#-quick-start)
-- [🔧 Installation](#-installation)
-- [🌐 Environment Variables](#-environment-variables)
-- [🚀 Running the Application](#-running-the-application)
-- [🎯 API Endpoints](#-api-endpoints)
-- [👥 User Roles](#-user-roles)
-- [🔐 Authentication](#-authentication)
-- [📦 Deployment](#-deployment)
-- [🤝 Contributing](#-contributing)
-- [📞 Contact](#-contact)
-- [📄 License](#-license)
-
----
-
 ## 🌟 Features
 
 ### 👤 **User Features**
