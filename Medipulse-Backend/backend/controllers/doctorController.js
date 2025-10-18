@@ -70,15 +70,49 @@ const appointmentComplete = async (req, res) => {
         const { docId, appointmentId } = req.body
 
         const appointmentData = await appointmentModel.findById(appointmentId)
+        
+        // Debug logging
+        console.log('=== APPOINTMENT COMPLETE DEBUG ===');
+        console.log('Appointment ID:', appointmentId);
+        console.log('Doctor ID:', docId);
+        console.log('Appointment Data:', {
+            id: appointmentData?._id,
+            docId: appointmentData?.docId,
+            isCompleted: appointmentData?.isCompleted,
+            payment: appointmentData?.payment
+        });
+        
         if (appointmentData && appointmentData.docId === docId) {
-            await appointmentModel.findByIdAndUpdate(appointmentId, { isCompleted: true })
+            // When appointment is completed, mark as completed
+            // If payment is not already done (offline/cash payment), mark it as paid
+            const updateData = { isCompleted: true }
+            
+            // If payment was offline (not paid online), automatically mark as paid when completed
+            if (!appointmentData.payment) {
+                updateData.payment = true
+                console.log('Setting payment to true (was offline payment)');
+            } else {
+                console.log('Payment already true (was online payment)');
+            }
+            
+            console.log('Update Data:', updateData);
+            
+            const result = await appointmentModel.findByIdAndUpdate(appointmentId, updateData, { new: true })
+            
+            console.log('Updated Appointment:', {
+                isCompleted: result.isCompleted,
+                payment: result.payment
+            });
+            console.log('=== END DEBUG ===');
+            
             return res.json({ success: true, message: 'Appointment Completed' })
         }
 
+        console.log('ERROR: Doctor ID mismatch or appointment not found');
         res.json({ success: false, message: 'Appointment Cancelled' })
 
     } catch (error) {
-        console.log(error)
+        console.log('ERROR in appointmentComplete:', error)
         res.json({ success: false, message: error.message })
     }
 
