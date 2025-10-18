@@ -108,12 +108,12 @@ const MyAppointments = () => {
                             <p className=''>{item.docData.address.line1}</p>
                             <p className=''>{item.docData.address.line2}</p>
                             <p className=' mt-1'><span className='text-sm text-[#3C3C3C] font-medium'>Date & Time:</span> {slotDateFormat(item.slotDate)} |  {item.slotTime}</p>
-                            <p className='mt-1'>
+                            {/* <p className='mt-1'>
                                 <span className='text-sm text-[#3C3C3C] font-medium'>Payment Status:</span>{' '}
                                 <span className={`font-medium ${item.payment ? 'text-green-600' : 'text-orange-600'}`}>
                                     {item.payment ? 'Paid' : 'Unpaid'}
                                 </span>
-                            </p>
+                            </p> */}
                         </div>
                         <div></div>
                         <div className='flex flex-col gap-2 justify-end text-sm text-center'>
