@@ -6,6 +6,7 @@ import validator from "validator";
 import { v2 as cloudinary } from "cloudinary";
 import userModel from "../models/userModel.js";
 
+// this is the login controller
 const loginAdmin = async (req, res) => {
     try {
         const { email, password } = req.body;
