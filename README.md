@@ -13,6 +13,7 @@
   <p>Streamlining healthcare access with intuitive appointment scheduling and management</p>
 </div>
 
+
 <div align="center">
 
 ### 🔗 **Live Demo**
@@ -36,7 +37,6 @@
 - [🔧 Installation](#-installation)
 - [🌐 Environment Variables](#-environment-variables)
 - [🚀 Running the Application](#-running-the-application)
-- [📱 Screenshots](#-screenshots)
 - [🎯 API Endpoints](#-api-endpoints)
 - [👥 User Roles](#-user-roles)
 - [🔐 Authentication](#-authentication)
@@ -300,23 +300,6 @@ cd ../../Medipulse-Backend/backend
 npm start
 ```
 
----
-
-## 📱 Screenshots
-
-### User Interface
-- **Homepage:** Clean, modern landing page with doctor search
-- **Doctor Listing:** Grid view of available doctors with filters
-- **Appointment Booking:** Intuitive calendar-based booking system
-- **User Dashboard:** Personal appointment management interface
-
-### Admin Dashboard
-- **Analytics Overview:** Comprehensive system statistics
-- **Doctor Management:** Easy doctor profile management
-- **Appointment Monitoring:** Real-time appointment tracking
-
----
-
 ## 🎯 API Endpoints
 
 ### Authentication
@@ -462,24 +445,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
   <p>⭐ Star this repository if you found it helpful!</p>
 </div>
 
----
-
-## 🔄 Version History
-
-- **v1.0.0** - Initial release with core functionality
-- **v1.1.0** - Added admin dashboard and doctor management
-- **v1.2.0** - Enhanced UI/UX and mobile responsiveness
-
----
 
 ## 🐛 Known Issues
 
 - None currently reported
-
-## 🚧 Roadmap
-
-- [ ] Email notifications for appointments
-- [ ] SMS reminders
-- [ ] Video consultation integration
-- [ ] Multi-language support
-- [ ] Mobile app development
