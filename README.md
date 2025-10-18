@@ -92,55 +92,13 @@
 - **Image Storage:** Cloudinary
 - **Security:** bcrypt for password hashing
 - **Validation:** Validator.js
+- **Payment Gateway:** Stripe
 
 ### **Development Tools**
 - **Version Control:** Git & GitHub
 - **Package Manager:** npm
 - **Linting:** ESLint
 - **Code Formatting:** Prettier
-
----
-
-## 📁 Project Structure
-
-```
-Medipulse-5june/
-├── 📁 Medipulse-Backend/
-│   └── 📁 backend/
-│       ├── 📁 controllers/
-│       │   ├── adminController.js
-│       │   ├── doctorController.js
-│       │   └── userController.js
-│       ├── 📁 middleware/
-│       │   ├── authAdmin.js
-│       │   ├── authDoctor.js
-│       │   ├── authUser.js
-│       │   └── multer.js
-│       ├── 📁 models/
-│       │   ├── appointmentModel.js
-│       │   ├── doctorModel.js
-│       │   └── userModel.js
-│       ├── 📁 routes/
-│       │   ├── adminRoute.js
-│       │   ├── doctorRoute.js
-│       │   └── userRoute.js
-│       ├── 📄 server.js
-│       └── 📄 package.json
-├── 📁 Medipulse-Frontend/
-│   ├── 📁 frontend/ (User Interface)
-│   │   ├── 📁 src/
-│   │   │   ├── 📁 components/
-│   │   │   ├── 📁 pages/
-│   │   │   ├── 📁 context/
-│   │   │   ├── 📁 assets/
-│   │   │   └── 📄 App.jsx
-│   │   └── 📄 package.json
-│   └── 📁 admin/ (Admin Dashboard)
-│       ├── 📁 src/
-│       └── 📄 package.json
-├── 📄 README.md
-└── 📄 .gitignore
-```
 
 ---
 
@@ -371,72 +329,12 @@ The application uses **JWT (JSON Web Tokens)** for authentication:
 
 ---
 
-## 📦 Deployment
-
-### Recommended Platforms
-
-1. **Vercel (Frontend & Backend)**
-   ```bash
-   npm install -g vercel
-   vercel --prod
-   ```
-
-2. **Netlify (Frontend) + Railway (Backend)**
-   - Frontend: Deploy to Netlify
-   - Backend: Deploy to Railway
-
-3. **Heroku (Full Stack)**
-   ```bash
-   git push heroku main
-   ```
-
-### Environment Setup for Production
-- Update `VITE_BACKEND_URL` to production backend URL
-- Set up production MongoDB database
-- Configure Cloudinary for production
-- Set secure JWT secrets
-
----
-
-## 🤝 Contributing
-
-We welcome contributions! Please follow these steps:
-
-1. **Fork the repository**
-2. **Create a feature branch**
-   ```bash
-   git checkout -b feature/amazing-feature
-   ```
-3. **Commit your changes**
-   ```bash
-   git commit -m 'Add some amazing feature'
-   ```
-4. **Push to the branch**
-   ```bash
-   git push origin feature/amazing-feature
-   ```
-5. **Open a Pull Request**
-
-### Development Guidelines
-- Follow existing code style and conventions
-- Write clear, descriptive commit messages
-- Test your changes thoroughly
-- Update documentation as needed
-
----
-
 ## 📞 Contact
 
 **Developer:** Anuj Rathore  
 **Email:** anujrathore385@gmail.com  
 **GitHub:** [@rathoreanuj](https://github.com/rathoreanuj)  
 **Project Link:** [https://github.com/rathoreanuj/Medipulse](https://github.com/rathoreanuj/Medipulse)
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
