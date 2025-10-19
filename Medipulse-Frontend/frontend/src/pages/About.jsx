@@ -75,7 +75,7 @@ const About = () => {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className='grid md:grid-cols-2 gap-12 items-center'
+          className='grid md:grid-cols-2 items-center'
         >
           {/* Left Side - Image */}
           <div className='relative'>
