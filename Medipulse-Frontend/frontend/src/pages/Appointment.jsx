@@ -154,96 +154,159 @@ const Appointment = () => {
     }, [docInfo]);
 
     return docInfo ? (
-        <div>
-            <div className='flex flex-col sm:flex-row gap-4'>
-                <div>
-                    <img className='bg-primary w-full sm:max-w-72 rounded-lg' src={docInfo.image} alt="" />
+        <div className='max-w-6xl mx-auto px-4 py-6'>
+            {/* Doctor Profile Section */}
+            <div className='flex flex-col md:flex-row gap-6 mb-8'>
+                {/* Doctor Image */}
+                <div className='md:w-64 flex-shrink-0'>
+                    <img 
+                        className='w-full h-64 object-cover rounded-lg bg-blue-50' 
+                        src={docInfo.image} 
+                        alt={docInfo.name} 
+                    />
                 </div>
 
-                <div className='flex-1 border border-[#ADADAD] rounded-lg p-8 py-7 bg-white mx-2 sm:mx-0 mt-[-80px] sm:mt-0'>
-                    <p className='flex items-center gap-2 text-3xl font-medium text-gray-700'>
-                        {docInfo.name} <img className='w-5' src={assets.verified_icon} alt="" />
-                    </p>
-                    <div className='flex items-center gap-2 mt-1 text-gray-600'>
-                        <p>{docInfo.degree} - {docInfo.speciality}</p>
-                        <button className='py-0.5 px-2 border text-xs rounded-full'>{docInfo.experience}</button>
+                {/* Doctor Info */}
+                <div className='flex-1 bg-white border border-gray-200 rounded-lg p-6'>
+                    {/* Name and Verification */}
+                    <div className='flex items-start gap-2 mb-3'>
+                        <h1 className='text-2xl font-bold text-gray-800'>{docInfo.name}</h1>
+                        <img className='w-5 h-5 mt-1' src={assets.verified_icon} alt="verified" />
                     </div>
 
-                    <div>
-                        <p className='flex items-center gap-1 text-sm font-medium text-[#262626] mt-3'>
-                            About <img className='w-3' src={assets.info_icon} alt="" />
+                    {/* Degree and Specialty */}
+                    <div className='flex flex-wrap items-center gap-3 mb-4'>
+                        <span className='text-gray-700'>{docInfo.degree}</span>
+                        <span className='text-gray-400'>•</span>
+                        <span className='text-gray-700'>{docInfo.speciality}</span>
+                        <span className='px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full border border-gray-200'>
+                            {docInfo.experience}
+                        </span>
+                    </div>
+
+                    {/* About Section */}
+                    <div className='mb-4'>
+                        <h3 className='text-sm font-semibold text-gray-800 mb-2 flex items-center gap-1'>
+                            About
+                            <img className='w-3 h-3' src={assets.info_icon} alt="" />
+                        </h3>
+                        <p className='text-gray-600 text-sm leading-relaxed'>{docInfo.about}</p>
+                    </div>
+
+                    {/* Appointment Fee */}
+                    <div className='pt-4 border-t border-gray-200'>
+                        <p className='text-sm text-gray-600'>
+                            Appointment fee: <span className='text-lg font-semibold text-gray-800'>{currencySymbol}{docInfo.fees}</span>
                         </p>
-                        <p className='text-sm text-gray-600 max-w-[700px] mt-1'>{docInfo.about}</p>
                     </div>
-
-                    <p className='text-gray-600 font-medium mt-4'>
-                        Appointment fee: <span className='text-gray-800'>{currencySymbol}{docInfo.fees}</span>
-                    </p>
                 </div>
             </div>
 
-            <div className='sm:ml-72 sm:pl-4 mt-8 font-medium text-[#565656]'>
-                <p>Booking slots</p>
-                <div className='flex gap-3 items-center w-full overflow-x-scroll mt-4'>
-                    {docSlots.length && docSlots.map((item, index) => (
-                        <div
-                            onClick={() => setSlotIndex(index)}
-                            key={index}
-                            className={`text-center py-6 min-w-16 rounded-full cursor-pointer ${slotIndex === index ? 'bg-primary text-white' : 'border border-[#DDDDDD]'}`}
-                        >
-                            <p>{item[0] && daysOfWeek[item[0].datetime.getDay()]}</p>
-                            <p>{item[0] && item[0].datetime.getDate()}</p>
-                        </div>
-                    ))}
+            {/* Booking Section */}
+            <div className='bg-white border border-gray-200 rounded-lg p-6'>
+                <h2 className='text-xl font-bold text-gray-800 mb-4'>Book Your Appointment</h2>
+                
+                {/* Select Date */}
+                <div className='mb-6'>
+                    <h3 className='text-sm font-semibold text-gray-700 mb-3'>Select Date</h3>
+                    <div className='flex gap-2 overflow-x-auto pb-2'>
+                        {docSlots.length && docSlots.map((item, index) => (
+                            <div
+                                onClick={() => setSlotIndex(index)}
+                                key={index}
+                                className={`flex flex-col items-center justify-center min-w-[70px] h-20 rounded-lg cursor-pointer border-2 transition-all ${
+                                    slotIndex === index 
+                                        ? 'bg-primary text-white border-primary' 
+                                        : 'border-gray-200 hover:border-gray-300'
+                                }`}
+                            >
+                                <span className='text-xs font-medium mb-1'>
+                                    {item[0] && daysOfWeek[item[0].datetime.getDay()]}
+                                </span>
+                                <span className='text-lg font-bold'>
+                                    {item[0] && item[0].datetime.getDate()}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
                 </div>
 
-                <div className='flex items-center gap-3 w-full overflow-x-scroll mt-4'>
-                    {docSlots.length && docSlots[slotIndex].map((item, index) => (
-                        <p
-                            onClick={() => setSlotTime(item.time)}
-                            key={index}
-                            className={`text-sm font-light flex-shrink-0 px-5 py-2 rounded-full cursor-pointer ${item.time === slotTime ? 'bg-primary text-white' : 'text-[#949494] border border-[#B4B4B4]'}`}
-                        >
-                            {item.time.toLowerCase()}
-                        </p>
-                    ))}
+                {/* Select Time */}
+                <div className='mb-6'>
+                    <h3 className='text-sm font-semibold text-gray-700 mb-3'>Select Time</h3>
+                    <div className='flex flex-wrap gap-2'>
+                        {docSlots.length && docSlots[slotIndex].map((item, index) => (
+                            <button
+                                onClick={() => setSlotTime(item.time)}
+                                key={index}
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all border-2 ${
+                                    item.time === slotTime 
+                                        ? 'bg-primary text-white border-primary' 
+                                        : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                                }`}
+                            >
+                                {item.time.toLowerCase()}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 {/* Payment Mode Selection */}
-                <div className='mt-6'>
-                    <p className='font-medium text-gray-700 mb-3'>Select Payment Mode</p>
-                    <div className='flex gap-4'>
-                        <label className='flex items-center gap-2 cursor-pointer'>
+                <div className='mb-6'>
+                    <h3 className='text-sm font-semibold text-gray-700 mb-3'>Payment Method</h3>
+                    <div className='flex flex-col sm:flex-row gap-3'>
+                        <label className={`flex items-center gap-3 px-4 py-3 rounded-lg border-2 cursor-pointer transition-all ${
+                            paymentMode === 'offline' 
+                                ? 'border-primary bg-blue-50' 
+                                : 'border-gray-200 hover:border-gray-300'
+                        }`}>
                             <input
                                 type='radio'
                                 name='paymentMode'
                                 value='offline'
                                 checked={paymentMode === 'offline'}
                                 onChange={(e) => setPaymentMode(e.target.value)}
-                                className='w-4 h-4'
+                                className='w-4 h-4 text-primary'
                             />
-                            <span className='text-gray-700'>Pay at Clinic (Cash)</span>
+                            <div>
+                                <p className='font-medium text-gray-800'>Pay at Clinic</p>
+                                <p className='text-xs text-gray-600'>Cash payment</p>
+                            </div>
                         </label>
-                        <label className='flex items-center gap-2 cursor-pointer'>
+                        <label className={`flex items-center gap-3 px-4 py-3 rounded-lg border-2 cursor-pointer transition-all ${
+                            paymentMode === 'online' 
+                                ? 'border-primary bg-blue-50' 
+                                : 'border-gray-200 hover:border-gray-300'
+                        }`}>
                             <input
                                 type='radio'
                                 name='paymentMode'
                                 value='online'
                                 checked={paymentMode === 'online'}
                                 onChange={(e) => setPaymentMode(e.target.value)}
-                                className='w-4 h-4'
+                                className='w-4 h-4 text-primary'
                             />
-                            <span className='text-gray-700'>Pay Online (Card)</span>
+                            <div>
+                                <p className='font-medium text-gray-800'>Pay Online</p>
+                                <p className='text-xs text-gray-600'>Card payment</p>
+                            </div>
                         </label>
                     </div>
                 </div>
 
-                <button onClick={bookAppointment} className='bg-primary text-white text-sm font-light px-20 py-3 rounded-full my-6'>
-                    Book an appointment
+                {/* Book Appointment Button */}
+                <button 
+                    onClick={bookAppointment} 
+                    className='w-full sm:w-auto bg-primary text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors'
+                >
+                    Book Appointment
                 </button>
             </div>
 
-            <RelatedDoctors speciality={docInfo.speciality} docId={docId} />
+            {/* Related Doctors */}
+            <div className='mt-10'>
+                <RelatedDoctors speciality={docInfo.speciality} docId={docId} />
+            </div>
 
             {/* Stripe Checkout Modal */}
             {showStripeCheckout && (
