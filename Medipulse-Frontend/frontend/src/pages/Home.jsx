@@ -4,6 +4,7 @@ import SpecialityMenu from '../components/SpecialityMenu'
 import TopDoctors from '../components/TopDoctors'
 import Banner from '../components/Banner'
 import WhyChooseMedipulse from './WhyChooseMedipulse'
+import Stats from './Stats'
 
 const Home = () => {
   return (
@@ -13,6 +14,7 @@ const Home = () => {
       <SpecialityMenu />
       <TopDoctors />
       <Banner />
+      <Stats/>
     </div>
   )
 }
