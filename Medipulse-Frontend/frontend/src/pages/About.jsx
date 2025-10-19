@@ -7,23 +7,6 @@ const About = () => {
   return (
     <div>
 
-      {/* Hero Section */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className='bg-white border-b border-gray-200'
-      >
-        <div className='max-w-6xl mx-auto px-4 py-12 text-center'>
-          <h1 className='text-2xl md:text-3xl font-semibold text-gray-900 mb-2'>
-            About <span className='text-primary'>MediPulse</span>
-          </h1>
-          <p className='text-base text-gray-600 max-w-3xl mx-auto'>
-            Delivering trusted healthcare through technology and compassion
-          </p>
-        </div>
-      </motion.div>
-
       {/* Two Column Layout - Main Content */}
       <div className='max-w-6xl mx-auto px-4 py-16'>
         <motion.div 

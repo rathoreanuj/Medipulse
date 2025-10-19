@@ -26,11 +26,6 @@ const Doctors = () => {
 
   return (
     <div className='max-w-7xl mx-auto px-4 py-8'>
-      {/* Header Section */}
-      <div className='mb-8 text-center'>
-        <h1 className='text-3xl font-bold text-gray-800 mb-2'>Find a  <span className='text-primary'> Doctor</span></h1>
-        <p className='text-gray-600'>Browse through our specialist doctors and book your appointment</p>
-      </div>
 
       {/* Main Content */}
       <div className='flex flex-col sm:flex-row items-start gap-6'>

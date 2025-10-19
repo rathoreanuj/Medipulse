@@ -87,15 +87,6 @@ const Contact = () => {
 
   return (
     <div className='bg-white'>
-      
-      {/* Simple Header */}
-      <div className='border-b border-gray-200'>
-        <div className='max-w-6xl mx-auto px-4 py-12 text-center'>
-          <h1 className='text-3xl font-semibold text-gray-900 mb-2'>Contact <span className='text-primary'>Us</span></h1>
-          <p className='text-gray-600'>Get in touch with our team. We typically respond within 24 hours.</p>
-        </div>
-      </div>
-
       {/* Main Content */}
       <div className='max-w-6xl mx-auto px-4 py-12'>
         <div className='grid md:grid-cols-3 gap-10'>

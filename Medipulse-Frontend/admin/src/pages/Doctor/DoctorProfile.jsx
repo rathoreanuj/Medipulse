@@ -50,12 +50,12 @@ const DoctorProfile = () => {
         <div className='max-w-5xl px-10 pt-10 pb-7'>
             
             {/* Profile Header */}
-            <div className='bg-white border-2 border-gray-200 p-6 mb-5'>
+            <div className='bg-white border-2 border-gray-200 rounded-lg p-6 mb-5'>
                 <div className='flex flex-col sm:flex-row gap-6'>
                     {/* Profile Image */}
                     <div className='flex-shrink-0'>
                         <img 
-                            className='w-40 h-40 object-cover border-2 border-gray-300' 
+                            className='w-40 h-40 object-cover border-2 border-gray-300 rounded-lg' 
                             src={profileData.image} 
                             alt={profileData.name} 
                         />
@@ -71,7 +71,7 @@ const DoctorProfile = () => {
                             <span>•</span>
                             <span>{profileData.speciality}</span>
                         </div>
-                        <div className='inline-block px-3 py-1 bg-gray-100 text-gray-700 text-sm border border-gray-300'>
+                        <div className='inline-block px-3 py-1 bg-gray-100 text-gray-700 text-sm border border-gray-300 rounded'>
                             {profileData.experience}
                         </div>
 
@@ -81,7 +81,7 @@ const DoctorProfile = () => {
                                 type="checkbox" 
                                 onChange={() => isEdit && setProfileData(prev => ({ ...prev, available: !prev.available }))} 
                                 checked={profileData.available}
-                                className='w-4 h-4'
+                                className='w-4 h-4 rounded'
                                 id='availableCheckbox'
                             />
                             <label htmlFor='availableCheckbox' className='text-sm text-gray-700'>
@@ -93,7 +93,7 @@ const DoctorProfile = () => {
             </div>
 
             {/* Profile Details */}
-            <div className='bg-white border-2 border-gray-200 p-6'>
+            <div className='bg-white border-2 border-gray-200 rounded-lg p-6'>
                 
                 {/* About Section */}
                 <div className='mb-6'>
@@ -101,7 +101,7 @@ const DoctorProfile = () => {
                     {isEdit ? (
                         <textarea 
                             onChange={(e) => setProfileData(prev => ({ ...prev, about: e.target.value }))} 
-                            className='w-full border-2 border-gray-300 p-3 text-sm text-gray-700 focus:outline-none focus:border-primary' 
+                            className='w-full border-2 border-gray-300 rounded-lg p-3 text-sm text-gray-700 focus:outline-none focus:border-primary' 
                             rows={6} 
                             value={profileData.about}
                         />
@@ -122,7 +122,7 @@ const DoctorProfile = () => {
                                 type='number' 
                                 onChange={(e) => setProfileData(prev => ({ ...prev, fees: e.target.value }))} 
                                 value={profileData.fees}
-                                className='w-28 border-2 border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:border-primary'
+                                className='w-28 border-2 border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-primary'
                             />
                         </div>
                     ) : (
@@ -142,14 +142,14 @@ const DoctorProfile = () => {
                                 onChange={(e) => setProfileData(prev => ({ ...prev, address: { ...prev.address, line1: e.target.value } }))} 
                                 value={profileData.address.line1}
                                 placeholder='Address Line 1'
-                                className='w-full border-2 border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-primary'
+                                className='w-full border-2 border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary'
                             />
                             <input 
                                 type='text' 
                                 onChange={(e) => setProfileData(prev => ({ ...prev, address: { ...prev.address, line2: e.target.value } }))} 
                                 value={profileData.address.line2}
                                 placeholder='Address Line 2'
-                                className='w-full border-2 border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-primary'
+                                className='w-full border-2 border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary'
                             />
                         </div>
                     ) : (
@@ -166,7 +166,7 @@ const DoctorProfile = () => {
                         <>
                             <button 
                                 onClick={updateProfile} 
-                                className='px-6 py-2 bg-primary text-white text-sm font-medium hover:bg-blue-600'
+                                className='px-6 py-2 bg-primary text-white text-sm font-medium hover:bg-blue-600 rounded-lg'
                             >
                                 Save Changes
                             </button>
@@ -175,7 +175,7 @@ const DoctorProfile = () => {
                                     setIsEdit(false);
                                     getProfileData();
                                 }} 
-                                className='px-6 py-2 border-2 border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50'
+                                className='px-6 py-2 border-2 border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 rounded-lg'
                             >
                                 Cancel
                             </button>
@@ -183,7 +183,7 @@ const DoctorProfile = () => {
                     ) : (
                         <button 
                             onClick={() => setIsEdit(true)} 
-                            className='px-6 py-2 bg-primary text-white text-sm font-medium hover:bg-blue-600'
+                            className='px-6 py-2 bg-primary text-white text-sm font-medium hover:bg-blue-600 rounded-lg'
                         >
                             Edit Profile
                         </button>

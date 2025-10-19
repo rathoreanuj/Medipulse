@@ -130,7 +130,7 @@ export default function Stats() {
                 transition={{ duration: 0.5, delay: 0.3 }}
                 className="text-center p-6 rounded-xl"
               >
-                <div className="w-16 h-16 bg-violet-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg
                     className="w-8 h-8 text-white"
                     fill="none"
@@ -145,7 +145,7 @@ export default function Stats() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-4xl font-bold text-violet-600 mb-2">
+                <h3 className="text-4xl font-bold text-blue-700 mb-2">
                   {stats.support}
                 </h3>
                 <p className="text-gray-600 font-medium">Support Available</p>
