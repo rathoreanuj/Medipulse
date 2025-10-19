@@ -33,10 +33,7 @@ app.use("/api/payment", paymentRouter)
 
 app.get("/", (req, res) => {
   res.status(200).json({ 
-    message: "MediPulse API is running successfully.",
-    version: "1.0.1",
-    lastDeployed: new Date().toISOString(),
-    features: ["Payment status fix deployed"]
+    message: "MediPulse API is running successfully."
   });
 });
 
