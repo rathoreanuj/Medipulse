@@ -74,12 +74,6 @@ const AddDoctor = () => {
     return (
         <form onSubmit={onSubmitHandler} className='p-6 w-full max-w-5xl'>
 
-            {/* Page Header */}
-            <div className='mb-6'>
-                <h1 className='text-2xl font-bold text-gray-800'>Add New Doctor</h1>
-                <p className='text-gray-600 text-sm mt-1'>Fill in the information below to add a new doctor to the system</p>
-            </div>
-
             <div className='bg-white border border-gray-200 rounded-lg shadow-sm'>
                 
                 {/* Image Upload Section */}

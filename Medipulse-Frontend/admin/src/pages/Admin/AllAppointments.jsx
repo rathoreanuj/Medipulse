@@ -17,12 +17,6 @@ const AllAppointments = () => {
   return (
     <div className='w-full max-w-7xl p-6'>
 
-      {/* Page Header */}
-      <div className='mb-6 text-center'>
-        <h1 className='text-2xl font-bold text-gray-800'>All Appointments</h1>
-        <p className='text-gray-600 text-sm mt-1'>View and manage all patient appointments</p>
-      </div>
-
       {/* Appointments Table */}
       <div className='bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden'>
         
