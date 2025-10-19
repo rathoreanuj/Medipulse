@@ -13,18 +13,16 @@ const About = () => {
   })
 
   useEffect(() => {
-    // Fetch stats from admin server
+    // Fetch stats from public endpoint
     const fetchStats = async () => {
       try {
-        // Fetch dashboard stats from admin backend
-        const { data } = await axios.get(backendUrl + '/api/admin/dashboard', {
-          headers: { atoken: localStorage.getItem('atoken') }
-        })
+        // Fetch stats from public endpoint (no authentication required)
+        const { data } = await axios.get(backendUrl + '/api/admin/public-stats')
         
         if (data.success) {
           setStats({
-            appointments: data.dashData?.appointments || 0,
-            doctors: doctors?.length || data.dashData?.doctors || 0,
+            appointments: data.stats?.appointments || 0,
+            doctors: data.stats?.doctors || doctors?.length || 0,
             support: '24/7'
           })
         } else {

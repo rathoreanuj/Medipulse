@@ -135,6 +135,24 @@ const fixCompletedAppointments = async (req, res) => {
     }
 };
 
+// Public stats endpoint for About page (no authentication required)
+const publicStats = async (req, res) => {
+    try {
+        const doctors = await doctorModel.find({});
+        const appointments = await appointmentModel.find({});
+        
+        const statsData = {
+            doctors: doctors.length,
+            appointments: appointments.length
+        };
+        
+        res.json({ success: true, stats: statsData });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
 export {
     loginAdmin,
     appointmentsAdmin,
@@ -142,5 +160,6 @@ export {
     addDoctor,
     allDoctors,
     adminDashboard,
-    fixCompletedAppointments
+    fixCompletedAppointments,
+    publicStats
 };
