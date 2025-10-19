@@ -10,7 +10,7 @@ export default {
         'auto':'repeat(auto-fill, minmax(200px, 1fr))'
       },
       colors:{
-        'primary': '#0D63A5',//#0288D1
+        'primary':'#3B82F6', //#0288D1, '#0D63A5'
       }
     },
   },
