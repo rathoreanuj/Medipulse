@@ -178,8 +178,8 @@ PORT=4000
 NODE_ENV=development
 
 # Admin Credentials
-ADMIN_EMAIL=admin@medipulse.com
-ADMIN_PASSWORD=admin123
+ADMIN_EMAIL=xyz@.com
+ADMIN_PASSWORD=******
 ```
 
 ### Frontend (.env)
