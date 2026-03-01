@@ -86,6 +86,17 @@ const MyAppointments = () => {
         toast.info('Payment cancelled')
     }
 
+    // Determines payment status label + style for each appointment
+    const getPaymentStatus = (item) => {
+        if (item.cancelled) {
+            if (item.payment) return { label: 'Refund', bg: 'bg-purple-50', border: 'border-purple-400', text: 'text-purple-700' }
+            return { label: 'None', bg: 'bg-gray-100', border: 'border-gray-300', text: 'text-gray-500' }
+        }
+        if (item.payment) return { label: 'Paid', bg: 'bg-green-50', border: 'border-green-400', text: 'text-green-700' }
+        if (item.paymentMode === 'cash') return { label: 'Pending', bg: 'bg-orange-50', border: 'border-orange-400', text: 'text-orange-700' }
+        return null
+    }
+
     useEffect(() => {
         if (token) {
             getUserAppointments()
@@ -165,6 +176,18 @@ const MyAppointments = () => {
 
                                 {/* Action Buttons */}
                                 <div className='flex sm:flex-col gap-2 justify-end items-end sm:items-stretch'>
+                                    {/* Payment Status Badge */}
+                                    {(() => {
+                                        const ps = getPaymentStatus(item)
+                                        return ps ? (
+                                            <div className={`flex items-center gap-1.5 px-3 py-1.5 ${ps.bg} border ${ps.border} rounded-lg ${ps.text} text-sm font-medium whitespace-nowrap`}>
+                                                <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z' />
+                                                </svg>
+                                                {ps.label}
+                                            </div>
+                                        ) : null
+                                    })()}
                                     {/* Completed Status */}
                                     {item.isCompleted && (
                                         <div className='flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-500 rounded-lg text-green-700 font-medium whitespace-nowrap'>

@@ -111,7 +111,8 @@ const bookAppointment = async (req, res) => {
             slotTime,
             slotDate,
             date: Date.now(),
-            payment: paymentMode === 'online' ? false : false // Will be updated after online payment
+            paymentMode: paymentMode || 'cash',
+            payment: false
         };
         const newAppointment = new appointmentModel(appointmentData);
         await newAppointment.save();
