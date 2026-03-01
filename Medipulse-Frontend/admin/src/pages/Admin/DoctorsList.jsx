@@ -1,9 +1,19 @@
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { AdminContext } from '../../context/AdminContext'
 
 const DoctorsList = () => {
 
-  const { doctors, changeAvailability , aToken , getAllDoctors} = useContext(AdminContext)
+  const { doctors, changeAvailability, deleteDoctor, aToken, getAllDoctors } = useContext(AdminContext)
+  const [confirmId, setConfirmId] = useState(null)
+
+  const handleDelete = (docId) => {
+    if (confirmId === docId) {
+      deleteDoctor(docId)
+      setConfirmId(null)
+    } else {
+      setConfirmId(docId)
+    }
+  }
 
   useEffect(() => {
     if (aToken) {
@@ -16,15 +26,33 @@ const DoctorsList = () => {
       
       <div className='w-full flex flex-wrap gap-4 pt-5 gap-y-6'>
         {doctors.map((item, index) => (
-          <div className='border border-[#C9D8FF] rounded-xl max-w-56 overflow-hidden cursor-pointer group' key={index}>
+          <div className='border border-[#C9D8FF] rounded-xl max-w-56 overflow-hidden cursor-pointer group relative' key={index}>
             <img className='bg-[#EAEFFF] group-hover:bg-primary transition-all duration-500' src={item.image} alt="" />
             <div className='p-4'>
               <p className='text-[#262626] text-lg font-medium'>{item.name}</p>
               <p className='text-[#5C5C5C] text-sm'>{item.speciality}</p>
               <div className='mt-2 flex items-center gap-1 text-sm'>
-                <input onChange={()=>changeAvailability(item._id)} type="checkbox" checked={item.available} />
+                <input onChange={() => changeAvailability(item._id)} type="checkbox" checked={item.available} />
                 <p>Available</p>
               </div>
+              <button
+                onClick={() => handleDelete(item._id)}
+                className={`mt-3 w-full text-sm py-1.5 rounded-lg font-medium transition-all duration-200 ${
+                  confirmId === item._id
+                    ? 'bg-red-600 text-white hover:bg-red-700'
+                    : 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
+                }`}
+              >
+                {confirmId === item._id ? 'Confirm Delete?' : 'Delete Doctor'}
+              </button>
+              {confirmId === item._id && (
+                <button
+                  onClick={() => setConfirmId(null)}
+                  className='mt-1 w-full text-sm py-1 rounded-lg text-gray-500 hover:bg-gray-100 transition-all duration-200'
+                >
+                  Cancel
+                </button>
+              )}
             </div>
           </div>
         ))}

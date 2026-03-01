@@ -153,6 +153,22 @@ const publicStats = async (req, res) => {
     }
 };
 
+const deleteDoctor = async (req, res) => {
+    try {
+        const { docId } = req.body;
+        await doctorModel.findByIdAndDelete(docId);
+        // Also cancel all future appointments for this doctor
+        await appointmentModel.updateMany(
+            { docId, cancelled: false, isCompleted: false },
+            { cancelled: true }
+        );
+        res.json({ success: true, message: 'Doctor Deleted' });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
 export {
     loginAdmin,
     appointmentsAdmin,
@@ -161,5 +177,6 @@ export {
     allDoctors,
     adminDashboard,
     fixCompletedAppointments,
-    publicStats
+    publicStats,
+    deleteDoctor
 };
