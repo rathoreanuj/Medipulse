@@ -7,6 +7,7 @@ import userRouter from "./routes/userRoute.js"
 import doctorRouter from "./routes/doctorRoute.js"
 import adminRouter from "./routes/adminRoute.js"
 import paymentRouter from "./routes/paymentRoute.js"
+import contactRouter from "./routes/contactRoute.js"
 import { globalLimiter } from "./middleware/rateLimiter.js"
 
 const app = express()
@@ -32,6 +33,7 @@ app.use("/api/user", userRouter)
 app.use("/api/admin", adminRouter)
 app.use("/api/doctor", doctorRouter)
 app.use("/api/payment", paymentRouter)
+app.use("/api/contact", contactRouter)
 
 app.get("/", (req, res) => {
   res.status(200).json({ 

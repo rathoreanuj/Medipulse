@@ -1,7 +1,11 @@
 import { useState } from 'react'
 import { toast } from 'react-toastify'
+import axios from 'axios'
+import { useContext } from 'react'
+import { AppContext } from '../context/AppContext'
 
 const Contact = () => {
+  const { backendUrl } = useContext(AppContext)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -76,12 +80,21 @@ const Contact = () => {
 
     setIsSubmitting(true)
 
-    setTimeout(() => {
-      toast.success('Message sent successfully! We will get back to you soon.')
-      setFormData({ name: '', email: '', phone: '', message: '' })
-      setErrors({})
+    try {
+      const { data } = await axios.post(backendUrl + '/api/contact/send', formData)
+      if (data.success) {
+        toast.success('Message sent! We will get back to you soon.')
+        setFormData({ name: '', email: '', phone: '', message: '' })
+        setErrors({})
+      } else {
+        toast.error(data.message)
+      }
+    } catch (error) {
+      console.log(error)
+      toast.error('Something went wrong. Please try again.')
+    } finally {
       setIsSubmitting(false)
-    }, 1500)
+    }
   }
 
 
