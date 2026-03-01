@@ -7,6 +7,7 @@ import userRouter from "./routes/userRoute.js"
 import doctorRouter from "./routes/doctorRoute.js"
 import adminRouter from "./routes/adminRoute.js"
 import paymentRouter from "./routes/paymentRoute.js"
+import { globalLimiter } from "./middleware/rateLimiter.js"
 
 const app = express()
 const port = process.env.PORT || 4000
@@ -25,6 +26,7 @@ app.use(cors({
 }))
 
 app.use(express.json())
+app.use(globalLimiter)
 
 app.use("/api/user", userRouter)
 app.use("/api/admin", adminRouter)
