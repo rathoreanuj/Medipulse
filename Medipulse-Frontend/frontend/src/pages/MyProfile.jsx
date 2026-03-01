@@ -161,7 +161,19 @@ const MyProfile = () => {
             {/* Header */}
           
 
-            <div className='bg-white rounded-2xl shadow-lg p-6 sm:p-8'>
+            <div className='relative bg-white rounded-2xl shadow-lg p-6 sm:p-8'>
+                {/* Edit Profile Button - top-right corner */}
+                {!isEdit && (
+                    <button
+                        onClick={() => setIsEdit(true)}
+                        className='absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 text-sm bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-all duration-200 shadow hover:shadow-md'
+                    >
+                        <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z' />
+                        </svg>
+                        Edit Profile
+                    </button>
+                )}
                 {/* Profile Picture Section */}
                 <div className='flex flex-col sm:flex-row items-center sm:items-start gap-6 pb-6 border-b'>
                     <div className='relative'>
@@ -388,51 +400,39 @@ const MyProfile = () => {
                 </div>
 
                 {/* Action Buttons */}
+                {isEdit && (
                 <div className='mt-8 pt-6 border-t flex flex-col sm:flex-row gap-3 justify-end'>
-                    {isEdit ? (
-                        <>
-                            <button 
-                                onClick={handleCancel}
-                                disabled={loading}
-                                className='px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
-                            >
-                                Cancel
-                            </button>
-                            <button 
-                                onClick={updateUserProfileData}
-                                disabled={loading}
-                                className='px-6 py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2'
-                            >
-                                {loading ? (
-                                    <>
-                                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        Saving...
-                                    </>
-                                ) : (
-                                    <>
-                                        <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                                            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M5 13l4 4L19 7' />
-                                        </svg>
-                                        Save Changes
-                                    </>
-                                )}
-                            </button>
-                        </>
-                    ) : (
-                        <button 
-                            onClick={() => setIsEdit(true)}
-                            className='px-6 py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2'
-                        >
-                            <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z' />
-                            </svg>
-                            Edit Profile
-                        </button>
-                    )}
+                    <button 
+                        onClick={handleCancel}
+                        disabled={loading}
+                        className='px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        onClick={updateUserProfileData}
+                        disabled={loading}
+                        className='px-6 py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2'
+                    >
+                        {loading ? (
+                            <>
+                                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Saving...
+                            </>
+                        ) : (
+                            <>
+                                <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M5 13l4 4L19 7' />
+                                </svg>
+                                Save Changes
+                            </>
+                        )}
+                    </button>
                 </div>
+                )}
             </div>
         </div>
     ) : null
