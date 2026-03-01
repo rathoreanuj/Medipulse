@@ -14,5 +14,12 @@ const appointmentSchema = new mongoose.Schema({
     isCompleted: { type: Boolean, default: false }
 })
 
+// Index for fetching appointments by user (My Appointments page)
+appointmentSchema.index({ userId: 1 })
+// Index for fetching appointments by doctor (Doctor dashboard)
+appointmentSchema.index({ docId: 1 })
+// Index for sorting appointments by date (newest first)
+appointmentSchema.index({ date: -1 })
+
 const appointmentModel = mongoose.models.appointment || mongoose.model("appointment", appointmentSchema)
 export default appointmentModel

@@ -16,5 +16,10 @@ const doctorSchema = new mongoose.Schema({
     date: { type: Number, required: true },
 }, { minimize: false })
 
+// Index for filtering doctors by speciality (Doctors listing page)
+doctorSchema.index({ speciality: 1 })
+// Index for filtering available doctors
+doctorSchema.index({ available: 1 })
+
 const doctorModel = mongoose.models.doctor || mongoose.model("doctor", doctorSchema);
 export default doctorModel;
