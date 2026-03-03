@@ -42,3 +42,9 @@ app.get("/", (req, res) => {
 });
 
 app.listen(port, () => console.log(`Server started on http://localhost:${port}`))
+
+// Keep Render free tier alive (ping every 14 min)
+setInterval(() => {
+  fetch(`https://medipulse-backend.onrender.com/`)
+    .catch(() => {}) // ignore errors
+}, 14 * 60 * 1000)
