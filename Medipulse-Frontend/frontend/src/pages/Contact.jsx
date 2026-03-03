@@ -81,7 +81,7 @@ const Contact = () => {
     setIsSubmitting(true)
 
     try {
-      const { data } = await axios.post(backendUrl + '/api/contact/send', formData)
+      const { data } = await axios.post(backendUrl + '/api/contact/send', formData, { timeout: 30000 })
       if (data.success) {
         toast.success('Message sent! We will get back to you soon.')
         setFormData({ name: '', email: '', phone: '', message: '' })
