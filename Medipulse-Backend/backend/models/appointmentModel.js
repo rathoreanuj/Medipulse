@@ -18,6 +18,8 @@ const appointmentSchema = new mongoose.Schema({
     reminderSentAdmin: { type: Boolean, default: false },
     commissionRate: { type: Number, default: 10 },
     commission: { type: Number, default: 0 },
+    consultationType: { type: String, enum: ['in-person', 'video'], default: 'in-person' },
+    videoRoomId: { type: String, default: null },
 })
 
 // Index for fetching appointments by user (My Appointments page)

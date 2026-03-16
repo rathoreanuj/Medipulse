@@ -15,6 +15,7 @@ import contactRouter from "./routes/contactRoute.js"
 import chatRouter from "./routes/chatRoute.js"
 import notificationRouter from "./routes/notificationRoute.js"
 import subscriptionRouter from "./routes/subscriptionRoute.js"
+import videoRouter from "./routes/videoRoute.js"
 import { globalLimiter } from "./middleware/rateLimiter.js"
 import appointmentModel from "./models/appointmentModel.js"
 import chatModel from "./models/chatModel.js"
@@ -138,6 +139,7 @@ app.use("/api/contact", contactRouter)
 app.use("/api/chat", chatRouter)
 app.use("/api/notification", notificationRouter)
 app.use("/api/subscription", subscriptionRouter)
+app.use("/api/video", videoRouter)
 
 app.get("/", (req, res) => {
   res.status(200).json({ 
@@ -314,6 +316,83 @@ io.on("connection", (socket) => {
       socket.emit("error", error.message)
     }
   })
+
+  // ─── WebRTC Video Signaling ────────────────────────────────────────────────
+
+  socket.on("join-video-room", async ({ videoRoomId, appointmentId, token, dtoken }) => {
+    try {
+      let callerId, callerRole;
+      if (token) {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        callerId = decoded.id;
+        callerRole = "patient";
+      } else if (dtoken) {
+        const decoded = jwt.verify(dtoken, process.env.JWT_SECRET);
+        callerId = decoded.id;
+        callerRole = "doctor";
+      } else {
+        socket.emit("video-error", "Authentication required");
+        return;
+      }
+
+      const appointment = await appointmentModel.findById(appointmentId);
+      if (!appointment || appointment.consultationType !== 'video' || appointment.videoRoomId !== videoRoomId) {
+        socket.emit("video-error", "Invalid video room");
+        return;
+      }
+      if (callerRole === "patient" && appointment.userId !== callerId) {
+        socket.emit("video-error", "Not authorized");
+        return;
+      }
+      if (callerRole === "doctor" && appointment.docId !== callerId) {
+        socket.emit("video-error", "Not authorized");
+        return;
+      }
+
+      socket.data.videoRoomId = videoRoomId;
+      socket.data.callerRole = callerRole;
+      socket.join(videoRoomId);
+
+      const roomSockets = await io.in(videoRoomId).fetchSockets();
+      const peersInRoom = roomSockets.length;
+
+      if (peersInRoom === 1) {
+        socket.emit("video-joined", { initiator: false, peersInRoom: 1 });
+      } else if (peersInRoom === 2) {
+        socket.emit("video-joined", { initiator: false, peersInRoom: 2 });
+        // Trigger the already-waiting peer to create the WebRTC offer
+        socket.to(videoRoomId).emit("video-peer-joined", { initiator: true });
+      } else {
+        socket.emit("video-error", "Room is full");
+        socket.leave(videoRoomId);
+      }
+    } catch (error) {
+      socket.emit("video-error", error.message);
+    }
+  });
+
+  socket.on("video-offer", ({ videoRoomId, sdp }) => {
+    socket.to(videoRoomId).emit("video-offer", { sdp });
+  });
+
+  socket.on("video-answer", ({ videoRoomId, sdp }) => {
+    socket.to(videoRoomId).emit("video-answer", { sdp });
+  });
+
+  socket.on("ice-candidate", ({ videoRoomId, candidate }) => {
+    socket.to(videoRoomId).emit("ice-candidate", { candidate });
+  });
+
+  socket.on("end-call", ({ videoRoomId }) => {
+    io.to(videoRoomId).emit("call-ended");
+  });
+
+  socket.on("disconnecting", () => {
+    if (socket.data.videoRoomId) {
+      socket.to(socket.data.videoRoomId).emit("peer-disconnected");
+    }
+  });
+
 })
 
 const sendUpcomingAppointmentReminders = async () => {

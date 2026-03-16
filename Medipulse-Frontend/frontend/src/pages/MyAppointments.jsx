@@ -148,6 +148,12 @@ const MyAppointments = () => {
                                     <div>
                                         <h3 className='text-xl font-bold text-gray-800 mb-1'>{item.docData.name}</h3>
                                         <p className='text-primary font-medium'>{item.docData.speciality}</p>
+                                        {item.consultationType === 'video' && (
+                                            <span className='inline-flex items-center gap-1 mt-1 text-xs font-medium text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full'>
+                                                <svg className='w-3 h-3' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 10l4.553-2.069A1 1 0 0121 8.882v6.236a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z' /></svg>
+                                                Video Consultation
+                                            </span>
+                                        )}
                                     </div>
 
                                     {/* Date & Time Badge */}
@@ -207,6 +213,18 @@ const MyAppointments = () => {
                                                 <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z' />
                                             </svg>
                                             Chat
+                                        </button>
+                                    )}
+                                    {/* Video Consultation Button */}
+                                    {!item.cancelled && !item.isCompleted && item.consultationType === 'video' && (
+                                        <button
+                                            onClick={() => navigate(`/video-call/${item._id}`)}
+                                            className='flex items-center gap-1.5 px-4 py-2 bg-green-50 border border-green-500 text-green-700 rounded-lg hover:bg-green-500 hover:text-white transition-all duration-300 text-sm font-medium whitespace-nowrap'
+                                        >
+                                            <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 10l4.553-2.069A1 1 0 0121 8.882v6.236a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z' />
+                                            </svg>
+                                            Join Call
                                         </button>
                                     )}
                                     {/* Cancel Button */}

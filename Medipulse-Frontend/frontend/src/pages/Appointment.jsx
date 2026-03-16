@@ -17,6 +17,13 @@ const Appointment = () => {
     const [slotIndex, setSlotIndex] = useState(0);
     const [slotTime, setSlotTime] = useState('');
     const [paymentMode, setPaymentMode] = useState('offline');
+    const [consultationType, setConsultationType] = useState('in-person');
+
+    // When video is selected, force online payment
+    const handleConsultationTypeChange = (type) => {
+        setConsultationType(type)
+        if (type === 'video') setPaymentMode('online')
+    }
     const [showStripeCheckout, setShowStripeCheckout] = useState(false);
     const [clientSecret, setClientSecret] = useState('');
     const [appointmentId, setAppointmentId] = useState('');
@@ -97,7 +104,7 @@ const Appointment = () => {
                 // Create payment intent for online payment
                 const { data } = await axios.post(
                     backendUrl + '/api/payment/create-payment-intent',
-                    { docId, slotDate, slotTime },
+                    { docId, slotDate, slotTime, consultationType },
                     { headers: { token } }
                 );
 
@@ -112,7 +119,7 @@ const Appointment = () => {
                 // Book appointment with offline payment
                 const { data } = await axios.post(
                     backendUrl + '/api/user/book-appointment',
-                    { docId, slotDate, slotTime, paymentMode: 'offline' },
+                    { docId, slotDate, slotTime, paymentMode: 'offline', consultationType },
                     { headers: { token } }
                 );
 
@@ -250,14 +257,69 @@ const Appointment = () => {
                     </div>
                 </div>
 
+                {/* Consultation Type */}
+                <div className='mb-6'>
+                    <h3 className='text-sm font-semibold text-gray-700 mb-3'>Consultation Type</h3>
+                    <div className='flex flex-col sm:flex-row gap-3'>
+                        <label className={`flex items-center gap-3 px-4 py-3 rounded-lg border-2 cursor-pointer transition-all flex-1 ${
+                            consultationType === 'in-person'
+                                ? 'border-primary bg-blue-50'
+                                : 'border-gray-200 hover:border-gray-300'
+                        }`}>
+                            <input
+                                type='radio'
+                                name='consultationType'
+                                value='in-person'
+                                checked={consultationType === 'in-person'}
+                                onChange={(e) => handleConsultationTypeChange(e.target.value)}
+                                className='w-4 h-4 text-primary'
+                            />
+                            <div className='flex items-center gap-2'>
+                                <svg className='w-5 h-5 text-gray-600' fill='none' stroke='currentColor' strokeWidth='1.8' viewBox='0 0 24 24'>
+                                    <path strokeLinecap='round' strokeLinejoin='round' d='M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' />
+                                </svg>
+                                <div>
+                                    <p className='font-medium text-gray-800 text-sm'>In-Person Visit</p>
+                                    <p className='text-xs text-gray-500'>Visit the clinic</p>
+                                </div>
+                            </div>
+                        </label>
+                        <label className={`flex items-center gap-3 px-4 py-3 rounded-lg border-2 cursor-pointer transition-all flex-1 ${
+                            consultationType === 'video'
+                                ? 'border-primary bg-blue-50'
+                                : 'border-gray-200 hover:border-gray-300'
+                        }`}>
+                            <input
+                                type='radio'
+                                name='consultationType'
+                                value='video'
+                                checked={consultationType === 'video'}
+                                onChange={(e) => handleConsultationTypeChange(e.target.value)}
+                                className='w-4 h-4 text-primary'
+                            />
+                            <div className='flex items-center gap-2'>
+                                <svg className='w-5 h-5 text-primary' fill='none' stroke='currentColor' strokeWidth='1.8' viewBox='0 0 24 24'>
+                                    <path strokeLinecap='round' strokeLinejoin='round' d='M15 10l4.553-2.069A1 1 0 0121 8.882v6.236a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z' />
+                                </svg>
+                                <div>
+                                    <p className='font-medium text-gray-800 text-sm'>Video Consultation</p>
+                                    <p className='text-xs text-gray-500'>Online video call</p>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
                 {/* Payment Mode Selection */}
                 <div className='mb-6'>
                     <h3 className='text-sm font-semibold text-gray-700 mb-3'>Payment Method</h3>
                     <div className='flex flex-col sm:flex-row gap-3'>
-                        <label className={`flex items-center gap-3 px-4 py-3 rounded-lg border-2 cursor-pointer transition-all ${
-                            paymentMode === 'offline' 
-                                ? 'border-primary bg-blue-50' 
-                                : 'border-gray-200 hover:border-gray-300'
+                        <label className={`flex items-center gap-3 px-4 py-3 rounded-lg border-2 transition-all flex-1 ${
+                            consultationType === 'video'
+                                ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
+                                : paymentMode === 'offline'
+                                    ? 'border-primary bg-blue-50 cursor-pointer'
+                                    : 'border-gray-200 hover:border-gray-300 cursor-pointer'
                         }`}>
                             <input
                                 type='radio'
@@ -265,11 +327,14 @@ const Appointment = () => {
                                 value='offline'
                                 checked={paymentMode === 'offline'}
                                 onChange={(e) => setPaymentMode(e.target.value)}
+                                disabled={consultationType === 'video'}
                                 className='w-4 h-4 text-primary'
                             />
                             <div>
                                 <p className='font-medium text-gray-800'>Pay at Clinic</p>
-                                <p className='text-xs text-gray-600'>Cash payment</p>
+                                <p className='text-xs text-gray-600'>
+                                    {consultationType === 'video' ? 'Not available for video' : 'Cash payment'}
+                                </p>
                             </div>
                         </label>
                         <label className={`flex items-center gap-3 px-4 py-3 rounded-lg border-2 cursor-pointer transition-all ${

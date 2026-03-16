@@ -206,7 +206,7 @@ const updateProfile = async (req, res) => {
 
 const bookAppointment = async (req, res) => {
     try {
-        const { userId, docId, slotDate, slotTime, paymentMode } = req.body;
+        const { userId, docId, slotDate, slotTime, paymentMode, consultationType } = req.body;
         const docData = await doctorModel.findById(docId).select("-password");
         if (!docData.available) {
             return res.json({ success: false, message: 'Doctor Not Available' });
@@ -224,6 +224,7 @@ const bookAppointment = async (req, res) => {
         }
         const userData = await userModel.findById(userId).select("-password");
         delete docData.slots_booked;
+        const isVideo = consultationType === 'video';
         const appointmentData = {
             userId,
             docId,
@@ -234,7 +235,9 @@ const bookAppointment = async (req, res) => {
             slotDate,
             date: Date.now(),
             paymentMode: paymentMode || 'cash',
-            payment: false
+            payment: false,
+            consultationType: isVideo ? 'video' : 'in-person',
+            videoRoomId: isVideo ? `video-${crypto.randomUUID()}` : null,
         };
         const newAppointment = new appointmentModel(appointmentData);
         await newAppointment.save();

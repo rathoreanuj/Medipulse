@@ -1,4 +1,5 @@
 import Stripe from 'stripe';
+import { randomUUID } from 'crypto';
 import appointmentModel from '../models/appointmentModel.js';
 import userModel from '../models/userModel.js';
 import doctorModel from '../models/doctorModel.js';
@@ -9,7 +10,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 // Create Stripe payment intent for appointment
 const createPaymentIntent = async (req, res) => {
     try {
-        const { userId, docId, slotDate, slotTime } = req.body;
+        const { userId, docId, slotDate, slotTime, consultationType } = req.body;
 
         // Get doctor and user data
         const docData = await doctorModel.findById(docId).select("-password");
@@ -33,6 +34,7 @@ const createPaymentIntent = async (req, res) => {
         }
 
         // Create appointment first
+        const isVideo = consultationType === 'video';
         const appointmentData = {
             userId,
             docId,
@@ -53,7 +55,9 @@ const createPaymentIntent = async (req, res) => {
             slotTime,
             slotDate,
             date: Date.now(),
-            payment: false // Will be updated after successful payment
+            payment: false,
+            consultationType: isVideo ? 'video' : 'in-person',
+            videoRoomId: isVideo ? `video-${randomUUID()}` : null,
         };
 
         const newAppointment = new appointmentModel(appointmentData);
