@@ -198,19 +198,24 @@ const MyProfile = () => {
                     const isPremiumActive = userData?.plan === 'premium' && userData?.planExpiry && new Date(userData.planExpiry) > new Date()
                     return (
                 <div className='flex flex-col sm:flex-row items-center sm:items-start gap-6 pb-6 border-b'>
+                    {/* Avatar wrapper — golden ring + crown badge for premium */}
                     <div className='relative inline-block'>
+                        {isPremiumActive && (
+                            <span className='absolute -inset-[3px] rounded-full ring-[3px] ring-yellow-400 z-10 pointer-events-none' />
+                        )}
+
                         {isEdit ? (
                             <label htmlFor='image' className='cursor-pointer group'>
                                 <div className='relative'>
                                     {image || (hasUsableAvatar && !profileImageError) ? (
                                         <img
-                                            className='w-32 h-32 rounded-full object-cover border-4 border-primary shadow-lg group-hover:opacity-75 transition-opacity'
+                                            className={`w-32 h-32 rounded-full object-cover shadow-lg group-hover:opacity-75 transition-opacity ${isPremiumActive ? 'border-4 border-yellow-400' : 'border-4 border-primary'}`}
                                             src={image ? URL.createObjectURL(image) : userData.image}
                                             alt="Profile"
                                             onError={() => setProfileImageError(true)}
                                         />
                                     ) : (
-                                        <div className='w-32 h-32 rounded-full border-4 border-primary shadow-lg bg-blue-50 text-primary flex items-center justify-center text-4xl font-bold'>
+                                        <div className={`w-32 h-32 rounded-full shadow-lg bg-blue-50 text-primary flex items-center justify-center text-4xl font-bold ${isPremiumActive ? 'border-4 border-yellow-400' : 'border-4 border-primary'}`}>
                                             {getInitial(userData.name)}
                                         </div>
                                     )}
@@ -229,28 +234,18 @@ const MyProfile = () => {
                         ) : (
                             hasUsableAvatar && !profileImageError ? (
                                 <img
-                                    className='w-32 h-32 rounded-full object-cover border-4 border-primary shadow-lg'
+                                    className={`w-32 h-32 rounded-full object-cover shadow-lg ${isPremiumActive ? 'border-4 border-yellow-400' : 'border-4 border-primary'}`}
                                     src={userData.image}
                                     alt="Profile"
                                     onError={() => setProfileImageError(true)}
                                 />
                             ) : (
-                                <div className='w-32 h-32 rounded-full border-4 border-primary shadow-lg bg-blue-50 text-primary flex items-center justify-center text-4xl font-bold'>
+                                <div className={`w-32 h-32 rounded-full shadow-lg bg-blue-50 text-primary flex items-center justify-center text-4xl font-bold ${isPremiumActive ? 'border-4 border-yellow-400' : 'border-4 border-primary'}`}>
                                     {getInitial(userData.name)}
                                 </div>
                             )
                         )}
-                        {/* Premium crown icon — bottom-right of avatar */}
-                        {isPremiumActive && (
-                            <span
-                                title='Premium Member'
-                                className='absolute bottom-1 right-1 w-7 h-7 rounded-full bg-white border-2 border-yellow-400 flex items-center justify-center shadow-md'
-                            >
-                                <svg className='w-4 h-4 text-yellow-500' viewBox='0 0 24 24' fill='currentColor'>
-                                    <path d='M2 19h20v2H2v-2zm2-3l3-8 5 4 5-7 3 11H4z'/>
-                                </svg>
-                            </span>
-                        )}
+                      
                     </div>
 
                     <div className='flex-1 text-center sm:text-left'>
@@ -271,11 +266,17 @@ const MyProfile = () => {
                         ) : (
                             <h2 className='text-3xl font-bold text-gray-800'>{userData.name}</h2>
                         )}
-                        <p className='text-gray-500 mt-2 flex items-center justify-center sm:justify-start gap-2'>
-                            <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' />
-                            </svg>
-                            Patient
+                        <p className={`mt-2 flex items-center justify-center sm:justify-start gap-2 font-medium ${isPremiumActive ? 'text-yellow-600' : 'text-gray-500'}`}>
+                            {isPremiumActive ? (
+                                <svg className='w-5 h-5 text-yellow-500' viewBox='0 0 24 24' fill='currentColor'>
+                                    <path d='M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm0 2h14v2H5v-2z'/>
+                                </svg>
+                            ) : (
+                                <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' />
+                                </svg>
+                            )}
+                            {isPremiumActive ? 'Premium Patient' : 'Patient'}
                         </p>
                     </div>
                 </div>
