@@ -7,7 +7,7 @@ import doctorModel from "../models/doctorModel.js";
 import appointmentModel from "../models/appointmentModel.js";
 import { v2 as cloudinary } from 'cloudinary';
 import { createNotification } from "../services/notificationService.js";
-import { sendOtpEmail } from "../services/emailService.js";
+import { sendOtpEmail, sendPasswordResetEmail } from "../services/emailService.js";
 
 const registerUser = async (req, res) => {
     try {
@@ -110,6 +110,63 @@ const verifyOtp = async (req, res) => {
         // Issue full JWT
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
         res.json({ success: true, token });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.json({ success: false, message: 'Email is required' });
+
+        const user = await userModel.findOne({ email });
+        // Always respond success to prevent email enumeration
+        if (!user) return res.json({ success: true, message: 'If that email is registered, a reset link has been sent.' });
+
+        // Generate a secure random token
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetTokenExpiry = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+
+        await userModel.findByIdAndUpdate(user._id, { resetToken, resetTokenExpiry });
+
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        const resetLink = `${frontendUrl}/reset-password?token=${resetToken}`;
+
+        await sendPasswordResetEmail(user.email, resetLink, user.name);
+
+        res.json({ success: true, message: 'If that email is registered, a reset link has been sent.' });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+const resetPassword = async (req, res) => {
+    try {
+        const { token, password } = req.body;
+        if (!token || !password) return res.json({ success: false, message: 'Token and password are required' });
+
+        if (password.length < 8) return res.json({ success: false, message: 'Password must be at least 8 characters' });
+
+        const user = await userModel.findOne({ resetToken: token });
+        if (!user) return res.json({ success: false, message: 'Invalid or expired reset link' });
+
+        if (!user.resetTokenExpiry || new Date() > user.resetTokenExpiry) {
+            return res.json({ success: false, message: 'Reset link has expired. Please request a new one.' });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        await userModel.findByIdAndUpdate(user._id, {
+            password: hashedPassword,
+            resetToken: null,
+            resetTokenExpiry: null
+        });
+
+        res.json({ success: true, message: 'Password reset successfully. You can now login.' });
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: error.message });
@@ -285,6 +342,8 @@ const listAppointment = async (req, res) => {
 export {
     loginUser,
     verifyOtp,
+    forgotPassword,
+    resetPassword,
     registerUser,
     getProfile,
     updateProfile,

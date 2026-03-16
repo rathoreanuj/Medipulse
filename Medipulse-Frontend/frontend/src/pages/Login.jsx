@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef, useState } from 'react'
 import { AppContext } from '../context/AppContext'
 import axios from 'axios'
 import { toast } from 'react-toastify'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 
 const OtpInput = ({ value, onChange }) => {
   const inputs = useRef([])
@@ -283,7 +283,10 @@ const Login = () => {
             </div>
 
             <div>
-              <label className='block text-sm font-medium text-gray-700 mb-1.5'>Password</label>
+              <div className='flex items-center justify-between mb-1.5'>
+                <label className='block text-sm font-medium text-gray-700'>Password</label>
+                <Link to='/forgot-password' className='text-xs text-primary hover:underline'>Forgot password?</Link>
+              </div>
               <input 
                 onChange={(e) => setPassword(e.target.value)} 
                 value={password} 

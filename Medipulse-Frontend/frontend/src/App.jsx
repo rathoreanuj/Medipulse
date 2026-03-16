@@ -11,6 +11,8 @@ import MyAppointments from './pages/MyAppointments'
 import MyProfile from './pages/MyProfile'
 import PremiumPlan from './pages/PremiumPlan'
 import PatientDashboard from './pages/PatientDashboard'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import Chat from './pages/Chat'
 import Footer from './components/Footer'
 import { ToastContainer } from 'react-toastify';
@@ -34,6 +36,8 @@ const App = () => {
         <Route path='/my-profile' element={<MyProfile />} />
         <Route path='/premium-plan' element={<PremiumPlan />} />
         <Route path='/my-dashboard' element={<PatientDashboard />} />
+        <Route path='/forgot-password' element={<ForgotPassword />} />
+        <Route path='/reset-password' element={<ResetPassword />} />
         <Route path='/chat/:appointmentId' element={<Chat />} />
         <Route path='/verify' element={<Verify />} />
       </Routes>

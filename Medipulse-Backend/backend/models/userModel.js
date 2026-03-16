@@ -13,6 +13,8 @@ const userSchema = new mongoose.Schema({
     planExpiry: { type: Date, default: null },
     otp: { type: String, default: null },
     otpExpiry: { type: Date, default: null },
+    resetToken: { type: String, default: null },
+    resetTokenExpiry: { type: Date, default: null },
 })
 
 const userModel = mongoose.models.user || mongoose.model("user", userSchema);

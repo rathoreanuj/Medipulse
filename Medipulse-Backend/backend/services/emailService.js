@@ -63,4 +63,62 @@ const sendOtpEmail = async (toEmail, otp, userName = 'there') => {
   await transporter.sendMail(mailOptions);
 };
 
-export { sendOtpEmail };
+/**
+ * Sends a password reset link email.
+ */
+const sendPasswordResetEmail = async (toEmail, resetLink, userName = 'there') => {
+  const mailOptions = {
+    from: `"Medipulse" <${process.env.EMAIL_USER}>`,
+    to: toEmail,
+    subject: 'Reset Your Medipulse Password',
+    html: `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 520px; margin: 0 auto; background: #f8fafc; border-radius: 12px; overflow: hidden;">
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #5f6FFF 0%, #3b5bdb 100%); padding: 32px 40px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">
+            🏥 Medipulse
+          </h1>
+          <p style="color: rgba(255,255,255,0.85); margin: 6px 0 0; font-size: 14px;">Healthcare at your fingertips</p>
+        </div>
+
+        <!-- Body -->
+        <div style="background: white; padding: 40px;">
+          <h2 style="color: #1e293b; margin: 0 0 8px; font-size: 20px; font-weight: 600;">
+            Reset your password
+          </h2>
+          <p style="color: #64748b; margin: 0 0 28px; font-size: 15px; line-height: 1.6;">
+            Hi ${userName}, we received a request to reset your Medipulse password. Click the button below to choose a new password. This link expires in <strong>30 minutes</strong>.
+          </p>
+
+          <!-- CTA Button -->
+          <div style="text-align: center; margin-bottom: 28px;">
+            <a href="${resetLink}" style="display: inline-block; background: linear-gradient(135deg, #5f6FFF 0%, #3b5bdb 100%); color: white; text-decoration: none; padding: 14px 36px; border-radius: 8px; font-size: 15px; font-weight: 600; letter-spacing: 0.3px;">
+              Reset Password
+            </a>
+          </div>
+
+          <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; margin: 0 0 12px;">
+            If the button doesn't work, copy and paste this link into your browser:
+          </p>
+          <p style="background: #f1f5f9; border-radius: 6px; padding: 10px 14px; font-size: 12px; color: #5f6FFF; word-break: break-all; margin: 0 0 20px;">
+            ${resetLink}
+          </p>
+          <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; margin: 0;">
+            If you didn't request a password reset, you can safely ignore this email. Your password will not be changed.
+          </p>
+        </div>
+
+        <!-- Footer -->
+        <div style="background: #f8fafc; padding: 20px 40px; border-top: 1px solid #e2e8f0; text-align: center;">
+          <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+            © ${new Date().getFullYear()} Medipulse. All rights reserved.
+          </p>
+        </div>
+      </div>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+};
+
+export { sendOtpEmail, sendPasswordResetEmail };
