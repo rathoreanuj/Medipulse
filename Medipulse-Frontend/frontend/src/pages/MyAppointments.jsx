@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AppContext } from '../context/AppContext'
 import StripeCheckout from '../components/StripeCheckout'
+import RatingModal from '../components/RatingModal'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 
@@ -14,6 +15,8 @@ const MyAppointments = () => {
     const [showStripeCheckout, setShowStripeCheckout] = useState(false)
     const [clientSecret, setClientSecret] = useState('')
     const [currentAppointmentId, setCurrentAppointmentId] = useState('')
+    const [reviewedIds, setReviewedIds] = useState(new Set())
+    const [ratingAppointment, setRatingAppointment] = useState(null)
 
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -99,8 +102,18 @@ const MyAppointments = () => {
     useEffect(() => {
         if (token) {
             getUserAppointments()
+            getReviewedIds()
         }
     }, [token])
+
+    const getReviewedIds = async () => {
+        try {
+            const { data } = await axios.get(backendUrl + '/api/user/reviewed-appointments', { headers: { token } })
+            if (data.success) setReviewedIds(new Set(data.reviewedIds))
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     return (
         <div className='max-w-6xl mx-auto px-4 py-8'>
@@ -202,6 +215,22 @@ const MyAppointments = () => {
                                             <span>Completed</span>
                                         </div>
                                     )}
+
+                                    {/* Rate Doctor button (completed + not yet reviewed) */}
+                                    {item.isCompleted && !item.cancelled && (
+                                        reviewedIds.has(item._id) ? (
+                                            <div className='flex items-center gap-1.5 px-4 py-2 bg-yellow-50 border border-yellow-300 rounded-lg text-yellow-700 text-sm font-medium whitespace-nowrap'>
+                                                <span className='text-yellow-400'>★</span> Reviewed
+                                            </div>
+                                        ) : (
+                                            <button
+                                                onClick={() => setRatingAppointment(item)}
+                                                className='flex items-center gap-1.5 px-4 py-2 bg-yellow-50 border border-yellow-400 text-yellow-700 rounded-lg hover:bg-yellow-400 hover:text-white transition-all duration-300 text-sm font-medium whitespace-nowrap'
+                                            >
+                                                <span>★</span> Rate Doctor
+                                            </button>
+                                        )
+                                    )}
                                     
                                     {/* Chat Button - visible for non-cancelled appointments */}
                                     {!item.cancelled && (
@@ -262,6 +291,15 @@ const MyAppointments = () => {
                     onCancel={handlePaymentCancel}
                     backendUrl={backendUrl}
                     token={token}
+                />
+            )}
+
+            {/* Rating Modal */}
+            {ratingAppointment && (
+                <RatingModal
+                    appointment={ratingAppointment}
+                    onClose={() => setRatingAppointment(null)}
+                    onSuccess={(id) => setReviewedIds(prev => new Set([...prev, id]))}
                 />
             )}
         </div>

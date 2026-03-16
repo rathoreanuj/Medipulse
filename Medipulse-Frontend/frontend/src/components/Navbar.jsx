@@ -103,8 +103,11 @@ const DoctorSearchBar = ({ doctors }) => {
                     <p className='text-sm font-semibold text-gray-800 truncate'>{doc.name}</p>
                     <p className='text-xs text-primary truncate'>{doc.speciality}</p>
                     <div className='flex items-center gap-2 mt-0.5'>
+                      {doc.averageRating > 0 && (
+                        <span className='text-[11px] text-yellow-500 font-medium'>★ {doc.averageRating.toFixed(1)}</span>
+                      )}
                       {doc.experience && (
-                        <span className='text-[11px] text-gray-400'>{doc.experience}</span>
+                        <span className='text-[11px] text-gray-400'>{doc.averageRating > 0 ? '·' : ''} {doc.experience}</span>
                       )}
                       {doc.fees && (
                         <span className='text-[11px] text-gray-400'>· ₹{doc.fees}</span>

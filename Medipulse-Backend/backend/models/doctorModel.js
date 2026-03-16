@@ -18,6 +18,8 @@ const doctorSchema = new mongoose.Schema({
     planExpiry: { type: Date, default: null },
     isFeatured: { type: Boolean, default: false },
     featuredUntil: { type: Date, default: null },
+    averageRating: { type: Number, default: 0 },
+    totalReviews:  { type: Number, default: 0 },
 }, { minimize: false })
 
 // Index for filtering doctors by speciality (Doctors listing page)

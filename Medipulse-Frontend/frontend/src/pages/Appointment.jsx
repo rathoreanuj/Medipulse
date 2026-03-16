@@ -7,6 +7,18 @@ import StripeCheckout from '../components/StripeCheckout';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
+// ─── Inline star display ──────────────────────────────────────────────────────
+const StarDisplay = ({ rating, size = 'sm' }) => {
+    const sz = size === 'lg' ? 'text-xl' : 'text-sm'
+    return (
+        <span className='inline-flex items-center'>
+            {[1,2,3,4,5].map(s => (
+                <span key={s} className={`${sz} ${s <= Math.round(rating) ? 'text-yellow-400' : 'text-gray-200'}`}>★</span>
+            ))}
+        </span>
+    )
+}
+
 const Appointment = () => {
     const { docId } = useParams();
     const { doctors, currencySymbol, backendUrl, token, getDoctosData } = useContext(AppContext);
@@ -27,6 +39,8 @@ const Appointment = () => {
     const [showStripeCheckout, setShowStripeCheckout] = useState(false);
     const [clientSecret, setClientSecret] = useState('');
     const [appointmentId, setAppointmentId] = useState('');
+    const [reviews, setReviews] = useState([]);
+    const [loadingReviews, setLoadingReviews] = useState(false);
 
     const navigate = useNavigate();
 
@@ -156,8 +170,22 @@ const Appointment = () => {
     useEffect(() => {
         if (docInfo) {
             getAvailableSolts();
+            fetchReviews();
         }
     }, [docInfo]);
+
+    const fetchReviews = async () => {
+        if (!docInfo?._id) return
+        setLoadingReviews(true)
+        try {
+            const { data } = await axios.get(backendUrl + `/api/user/doctor-reviews/${docInfo._id}`)
+            if (data.success) setReviews(data.reviews)
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setLoadingReviews(false)
+        }
+    }
 
     return docInfo ? (
         <div className='max-w-6xl mx-auto px-4 py-6'>
@@ -200,10 +228,20 @@ const Appointment = () => {
                     </div>
 
                     {/* Appointment Fee */}
-                    <div className='pt-4 border-t border-gray-200'>
+                    <div className='pt-4 border-t border-gray-200 flex items-center justify-between flex-wrap gap-3'>
                         <p className='text-sm text-gray-600'>
                             Appointment fee: <span className='text-lg font-semibold text-gray-800'>{currencySymbol}{docInfo.fees}</span>
                         </p>
+                        {/* Rating Summary */}
+                        {docInfo.totalReviews > 0 ? (
+                            <div className='flex items-center gap-2'>
+                                <StarDisplay rating={docInfo.averageRating} />
+                                <span className='text-sm font-semibold text-gray-700'>{docInfo.averageRating?.toFixed(1)}</span>
+                                <span className='text-xs text-gray-400'>({docInfo.totalReviews} review{docInfo.totalReviews !== 1 ? 's' : ''})</span>
+                            </div>
+                        ) : (
+                            <span className='text-xs text-gray-400'>No reviews yet</span>
+                        )}
                     </div>
                 </div>
             </div>
@@ -370,6 +408,67 @@ const Appointment = () => {
             {/* Related Doctors */}
             <div className='mt-10'>
                 <RelatedDoctors speciality={docInfo.speciality} docId={docId} />
+            </div>
+
+            {/* Patient Reviews Section */}
+            <div className='mt-10'>
+                <div className='flex items-center justify-between mb-5'>
+                    <h2 className='text-xl font-bold text-gray-800'>Patient Reviews</h2>
+                    {docInfo.totalReviews > 0 && (
+                        <div className='flex items-center gap-2 bg-yellow-50 border border-yellow-200 px-3 py-1.5 rounded-lg'>
+                            <StarDisplay rating={docInfo.averageRating} size='lg' />
+                            <span className='font-bold text-gray-800'>{docInfo.averageRating?.toFixed(1)}</span>
+                            <span className='text-sm text-gray-500'>/ 5 · {docInfo.totalReviews} review{docInfo.totalReviews !== 1 ? 's' : ''}</span>
+                        </div>
+                    )}
+                </div>
+
+                {loadingReviews ? (
+                    <div className='flex items-center justify-center py-10'>
+                        <svg className='w-7 h-7 animate-spin text-primary' fill='none' viewBox='0 0 24 24'>
+                            <circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4' />
+                            <path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z' />
+                        </svg>
+                    </div>
+                ) : reviews.length === 0 ? (
+                    <div className='text-center py-10 bg-gray-50 rounded-xl border border-gray-100'>
+                        <p className='text-4xl mb-3'>⭐</p>
+                        <p className='text-gray-500 font-medium'>No reviews yet</p>
+                        <p className='text-sm text-gray-400 mt-1'>Be the first to review after your appointment</p>
+                    </div>
+                ) : (
+                    <div className='space-y-4'>
+                        {reviews.map((review) => (
+                            <div key={review._id} className='bg-white border border-gray-100 rounded-xl p-5 shadow-sm'>
+                                <div className='flex items-start gap-3'>
+                                    {/* Avatar */}
+                                    <div className='w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden'>
+                                        {review.patientImage ? (
+                                            <img src={review.patientImage} alt={review.patientName} className='w-full h-full object-cover' />
+                                        ) : (
+                                            <span className='text-primary font-bold text-sm'>{review.patientName?.[0]?.toUpperCase()}</span>
+                                        )}
+                                    </div>
+                                    <div className='flex-1 min-w-0'>
+                                        <div className='flex items-center justify-between flex-wrap gap-2 mb-1'>
+                                            <p className='font-semibold text-gray-800'>{review.patientName}</p>
+                                            <span className='text-xs text-gray-400'>
+                                                {new Date(review.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                            </span>
+                                        </div>
+                                        <div className='flex items-center gap-1 mb-2'>
+                                            <StarDisplay rating={review.rating} />
+                                            <span className='text-sm font-medium text-gray-600 ml-1'>{review.rating}/5</span>
+                                        </div>
+                                        {review.comment && (
+                                            <p className='text-gray-600 text-sm leading-relaxed'>{review.comment}</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* Stripe Checkout Modal */}

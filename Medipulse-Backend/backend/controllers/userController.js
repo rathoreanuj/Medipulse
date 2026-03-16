@@ -5,6 +5,7 @@ import validator from "validator";
 import userModel from "../models/userModel.js";
 import doctorModel from "../models/doctorModel.js";
 import appointmentModel from "../models/appointmentModel.js";
+import reviewModel from "../models/reviewModel.js";
 import { v2 as cloudinary } from 'cloudinary';
 import { createNotification } from "../services/notificationService.js";
 import { sendOtpEmail, sendPasswordResetEmail } from "../services/emailService.js";
@@ -342,6 +343,92 @@ const listAppointment = async (req, res) => {
     }
 };
 
+// ─── Submit a review for a completed appointment ───────────────────────────
+const submitReview = async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const { appointmentId, rating, comment } = req.body;
+
+        if (!appointmentId || !rating) {
+            return res.json({ success: false, message: 'Appointment ID and rating are required' });
+        }
+        if (rating < 1 || rating > 5) {
+            return res.json({ success: false, message: 'Rating must be between 1 and 5' });
+        }
+
+        const appointment = await appointmentModel.findById(appointmentId);
+        if (!appointment) return res.json({ success: false, message: 'Appointment not found' });
+        if (appointment.userId !== userId) return res.json({ success: false, message: 'Unauthorised' });
+        if (!appointment.isCompleted) return res.json({ success: false, message: 'Can only review completed appointments' });
+        if (appointment.cancelled) return res.json({ success: false, message: 'Cannot review a cancelled appointment' });
+
+        // One review per appointment (unique index handles this too, but give a clear message)
+        const existing = await reviewModel.findOne({ appointmentId });
+        if (existing) return res.json({ success: false, message: 'You have already reviewed this appointment' });
+
+        await reviewModel.create({
+            userId,
+            docId: appointment.docId,
+            appointmentId,
+            rating,
+            comment: comment?.trim() || '',
+        });
+
+        // Recalculate doctor's aggregate rating
+        const agg = await reviewModel.aggregate([
+            { $match: { docId: appointment.docId } },
+            { $group: { _id: null, avg: { $avg: '$rating' }, count: { $sum: 1 } } }
+        ]);
+        const avg = agg.length ? Math.round(agg[0].avg * 10) / 10 : 0;
+        const count = agg.length ? agg[0].count : 0;
+        await doctorModel.findByIdAndUpdate(appointment.docId, { averageRating: avg, totalReviews: count });
+
+        res.json({ success: true, message: 'Review submitted successfully' });
+    } catch (error) {
+        console.log(error);
+        if (error.code === 11000) {
+            return res.json({ success: false, message: 'You have already reviewed this appointment' });
+        }
+        res.json({ success: false, message: error.message });
+    }
+};
+
+// ─── Get all reviews for a doctor (public) ────────────────────────────────
+const getDoctorReviews = async (req, res) => {
+    try {
+        const { docId } = req.params;
+        const reviews = await reviewModel.find({ docId }).sort({ createdAt: -1 }).lean();
+
+        // Attach patient name (stored in appointment's userData snapshot)
+        const enriched = await Promise.all(reviews.map(async (r) => {
+            const appt = await appointmentModel.findById(r.appointmentId).select('userData').lean();
+            return {
+                ...r,
+                patientName: appt?.userData?.name || 'Patient',
+                patientImage: appt?.userData?.image || null,
+            };
+        }));
+
+        res.json({ success: true, reviews: enriched });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+// ─── Get appointment IDs already reviewed by this user ───────────────────
+const getUserReviewedAppointments = async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const reviews = await reviewModel.find({ userId }).select('appointmentId').lean();
+        const reviewedIds = reviews.map(r => r.appointmentId);
+        res.json({ success: true, reviewedIds });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
 export {
     loginUser,
     verifyOtp,
@@ -352,5 +439,8 @@ export {
     updateProfile,
     bookAppointment,
     listAppointment,
-    cancelAppointment
+    cancelAppointment,
+    submitReview,
+    getDoctorReviews,
+    getUserReviewedAppointments,
 };

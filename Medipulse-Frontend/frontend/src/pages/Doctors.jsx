@@ -14,15 +14,15 @@ const Doctors = () => {
 
   const applyFilter = () => {
     let list = speciality ? doctors.filter(doc => doc.speciality === speciality) : [...doctors]
-    // Featured doctors first, then sort by name
+    // Sort: featured first → then highest average rating → then by name
     list.sort((a, b) => {
       const aFeatured = a.isFeatured && a.featuredUntil && new Date(a.featuredUntil) > new Date()
       const bFeatured = b.isFeatured && b.featuredUntil && new Date(b.featuredUntil) > new Date()
       if (aFeatured && !bFeatured) return -1
       if (!aFeatured && bFeatured) return 1
-      return 0
+      // Both same featured status → sort by rating descending
+      return (b.averageRating || 0) - (a.averageRating || 0)
     })
-
     setFilterDoc(list)
   }
 
@@ -149,7 +149,24 @@ const Doctors = () => {
                     <h3 className='text-lg font-bold text-gray-800 mb-0.5 group-hover:text-primary transition-colors line-clamp-1'>
                       {item.name}
                     </h3>
-                    <p className='text-gray-600 text-sm font-medium mb-3'>{item.speciality}</p>
+                    <p className='text-gray-600 text-sm font-medium mb-2'>{item.speciality}</p>
+                    
+                    {/* Rating */}
+                    <div className='flex items-center gap-1.5 mb-3'>
+                      {item.totalReviews > 0 ? (
+                        <>
+                          <div className='flex items-center'>
+                            {[1,2,3,4,5].map(s => (
+                              <span key={s} className={`text-base ${s <= Math.round(item.averageRating) ? 'text-yellow-400' : 'text-gray-200'}`}>★</span>
+                            ))}
+                          </div>
+                          <span className='text-sm font-semibold text-gray-700'>{item.averageRating.toFixed(1)}</span>
+                          <span className='text-xs text-gray-400'>({item.totalReviews})</span>
+                        </>
+                      ) : (
+                        <span className='text-xs text-gray-400'>No reviews yet</span>
+                      )}
+                    </div>
                     
                     {/* Book Appointment Button */}
                     <button className='w-full py-2 px-3 bg-blue-50 text-gray-800 rounded-lg font-medium text-sm hover:bg-blue-100 transition-colors duration-300 flex items-center justify-center gap-2'>
