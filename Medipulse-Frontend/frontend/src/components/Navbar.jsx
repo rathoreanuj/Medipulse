@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { assets } from '../assets/assets'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { AppContext } from '../context/AppContext'
@@ -10,6 +10,7 @@ const Navbar = () => {
   const [showMenu, setShowMenu] = useState(false)
   const [avatarError, setAvatarError] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
+  const notifRef = useRef(null)
   const {
     token,
     setToken,
@@ -30,6 +31,18 @@ const Navbar = () => {
   useEffect(() => {
     setAvatarError(false)
   }, [userData?.image])
+
+  // Close notification panel when clicking outside
+  useEffect(() => {
+    if (!showNotifications) return
+    const handleClickOutside = (e) => {
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setShowNotifications(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showNotifications])
 
   const logout = () => {
     localStorage.removeItem('token')
@@ -64,7 +77,7 @@ const Navbar = () => {
           token && userData
             ? (
               <>
-                <div className='relative'>
+                <div ref={notifRef} className='relative'>
                   <button
                     onClick={() => setShowNotifications((prev) => !prev)}
                     className='w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50'

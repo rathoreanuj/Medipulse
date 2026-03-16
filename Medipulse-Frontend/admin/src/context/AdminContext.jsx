@@ -135,7 +135,6 @@ const AdminContextProvider = (props) => {
             const { data } = await axios.post(backendUrl + '/api/admin/cancel-appointment', { appointmentId }, { headers: { aToken } })
 
             if (data.success) {
-                toast.success(data.message)
                 getAllAppointments()
             } else {
                 toast.error(data.message)
@@ -152,7 +151,6 @@ const AdminContextProvider = (props) => {
         try {
             const { data } = await axios.post(backendUrl + '/api/admin/delete-doctor', { docId }, { headers: { aToken } })
             if (data.success) {
-                toast.success(data.message)
                 getAllDoctors()
             } else {
                 toast.error(data.message)

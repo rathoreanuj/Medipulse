@@ -121,6 +121,13 @@ const MyProfile = () => {
         }
     }
 
+    const handleFormKeyDown = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault()
+            updateUserProfileData()
+        }
+    }
+
     const updateUserProfileData = async () => {
         // Validate form before submitting
         if (!validateForm()) {
@@ -239,6 +246,7 @@ const MyProfile = () => {
                                     className={`text-2xl font-bold bg-gray-50 border-2 ${errors.name ? 'border-red-500' : 'border-gray-200'} rounded-lg px-4 py-2 w-full max-w-md focus:outline-none focus:border-primary transition-colors`}
                                     type="text" 
                                     onChange={(e) => handleFieldChange('name', e.target.value)}
+                                    onKeyDown={handleFormKeyDown}
                                     value={userData.name}
                                     placeholder="Enter your full name"
                                 />
@@ -293,6 +301,7 @@ const MyProfile = () => {
                                             className={`flex-1 bg-white border-2 ${errors.phone ? 'border-red-500' : 'border-gray-200'} rounded-lg px-4 py-2 focus:outline-none focus:border-primary transition-colors`}
                                             type="tel" 
                                             onChange={(e) => handleFieldChange('phone', e.target.value)}
+                                            onKeyDown={handleFormKeyDown}
                                             value={userData.phone}
                                             placeholder="Enter 10-digit phone number"
                                         />

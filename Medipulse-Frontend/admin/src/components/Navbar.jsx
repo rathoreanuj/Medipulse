@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { assets } from '../assets/assets'
 import { DoctorContext } from '../context/DoctorContext'
 import { AdminContext } from '../context/AdminContext'
@@ -9,8 +9,21 @@ const Navbar = () => {
   const { dToken, setDToken, notifications: doctorNotifications, unreadNotifications: doctorUnread, markNotificationAsRead: markDoctorNotificationAsRead, markAllNotificationsAsRead: markAllDoctorRead } = useContext(DoctorContext)
   const { aToken, setAToken, notifications: adminNotifications, unreadNotifications: adminUnread, markNotificationAsRead: markAdminNotificationAsRead, markAllNotificationsAsRead: markAllAdminRead } = useContext(AdminContext)
   const [showNotifications, setShowNotifications] = useState(false)
+  const notifRef = useRef(null)
 
   const navigate = useNavigate()
+
+  // Close notification panel when clicking outside
+  useEffect(() => {
+    if (!showNotifications) return
+    const handleClickOutside = (e) => {
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setShowNotifications(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showNotifications])
 
   const logout = () => {
     navigate('/')
@@ -33,7 +46,7 @@ const Navbar = () => {
         <p className='border px-2.5 py-0.5 rounded-full border-gray-500 text-gray-600'>{aToken ? 'Admin' : 'Doctor'}</p>
       </div>
       <div className='flex items-center gap-3'>
-        <div className='relative'>
+        <div ref={notifRef} className='relative'>
           <button
             onClick={() => setShowNotifications((prev) => !prev)}
             className='w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 bg-white'
