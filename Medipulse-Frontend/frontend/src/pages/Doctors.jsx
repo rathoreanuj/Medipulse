@@ -13,11 +13,16 @@ const Doctors = () => {
   const { doctors } = useContext(AppContext)
 
   const applyFilter = () => {
-    if (speciality) {
-      setFilterDoc(doctors.filter(doc => doc.speciality === speciality))
-    } else {
-      setFilterDoc(doctors)
-    }
+    let list = speciality ? doctors.filter(doc => doc.speciality === speciality) : [...doctors]
+    // Featured doctors first, then sort by name
+    list.sort((a, b) => {
+      const aFeatured = a.isFeatured && a.featuredUntil && new Date(a.featuredUntil) > new Date()
+      const bFeatured = b.isFeatured && b.featuredUntil && new Date(b.featuredUntil) > new Date()
+      if (aFeatured && !bFeatured) return -1
+      if (!aFeatured && bFeatured) return 1
+      return 0
+    })
+    setFilterDoc(list)
   }
 
   useEffect(() => {
@@ -119,12 +124,17 @@ const Doctors = () => {
                   key={index}
                 >
                   {/* Doctor Image */}
-                  <div className='overflow-hidden bg-blue-50'>
+                  <div className='overflow-hidden bg-blue-50 relative'>
                     <img 
                       className='w-full h-44 object-cover group-hover:scale-105 transition-transform duration-300' 
                       src={item.image} 
                       alt={item.name} 
                     />
+                    {item.isFeatured && item.featuredUntil && new Date(item.featuredUntil) > new Date() && (
+                      <span className='absolute top-2 left-2 bg-yellow-400 text-white text-xs font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 shadow'>
+                        ⭐ Featured
+                      </span>
+                    )}
                   </div>
 
                   {/* Doctor Info */}

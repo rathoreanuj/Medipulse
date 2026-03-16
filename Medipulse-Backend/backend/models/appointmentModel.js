@@ -15,7 +15,9 @@ const appointmentSchema = new mongoose.Schema({
     isCompleted: { type: Boolean, default: false },
     reminderSentUser: { type: Boolean, default: false },
     reminderSentDoctor: { type: Boolean, default: false },
-    reminderSentAdmin: { type: Boolean, default: false }
+    reminderSentAdmin: { type: Boolean, default: false },
+    commissionRate: { type: Number, default: 10 },
+    commission: { type: Number, default: 0 },
 })
 
 // Index for fetching appointments by user (My Appointments page)

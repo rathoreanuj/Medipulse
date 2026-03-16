@@ -14,6 +14,10 @@ const doctorSchema = new mongoose.Schema({
     slots_booked: { type: Object, default: {} },
     address: { type: Object, required: true },
     date: { type: Number, required: true },
+    plan: { type: String, enum: ['free', 'pro'], default: 'free' },
+    planExpiry: { type: Date, default: null },
+    isFeatured: { type: Boolean, default: false },
+    featuredUntil: { type: Date, default: null },
 }, { minimize: false })
 
 // Index for filtering doctors by speciality (Doctors listing page)

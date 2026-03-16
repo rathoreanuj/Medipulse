@@ -14,6 +14,7 @@ import paymentRouter from "./routes/paymentRoute.js"
 import contactRouter from "./routes/contactRoute.js"
 import chatRouter from "./routes/chatRoute.js"
 import notificationRouter from "./routes/notificationRoute.js"
+import subscriptionRouter from "./routes/subscriptionRoute.js"
 import { globalLimiter } from "./middleware/rateLimiter.js"
 import appointmentModel from "./models/appointmentModel.js"
 import chatModel from "./models/chatModel.js"
@@ -136,6 +137,7 @@ app.use("/api/payment", paymentRouter)
 app.use("/api/contact", contactRouter)
 app.use("/api/chat", chatRouter)
 app.use("/api/notification", notificationRouter)
+app.use("/api/subscription", subscriptionRouter)
 
 app.get("/", (req, res) => {
   res.status(200).json({ 

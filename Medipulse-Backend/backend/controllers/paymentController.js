@@ -99,7 +99,10 @@ const verifyPayment = async (req, res) => {
 
         if (paymentIntent.status === 'succeeded') {
             // Update appointment payment status
-            await appointmentModel.findByIdAndUpdate(appointmentId, { payment: true });
+            const appointment = await appointmentModel.findById(appointmentId);
+            const commissionRate = appointment?.commissionRate ?? 10;
+            const commission = Math.round(((appointment?.amount || 0) * commissionRate / 100) * 100) / 100;
+            await appointmentModel.findByIdAndUpdate(appointmentId, { payment: true, commission });
 
             res.json({
                 success: true,
