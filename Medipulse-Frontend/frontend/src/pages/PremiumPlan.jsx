@@ -227,7 +227,7 @@ const PremiumPlanInner = () => {
           <div className='bg-white rounded-2xl shadow-xl p-6 w-full max-w-md'>
             <h3 className='text-lg font-bold text-gray-800 mb-1'>Complete Payment</h3>
             <p className='text-sm text-gray-500 mb-4'>Patient Premium Plan — 1 Month ($3.59)</p>
-            <Elements stripe={stripePromise}>
+            <Elements stripe={stripePromise} options={{ clientSecret }}>
               <PaymentForm
                 clientSecret={clientSecret}
                 onSuccess={handlePaymentSuccess}
@@ -241,10 +241,6 @@ const PremiumPlanInner = () => {
   )
 }
 
-const PremiumPlan = () => (
-  <Elements stripe={stripePromise}>
-    <PremiumPlanInner />
-  </Elements>
-)
+const PremiumPlan = () => <PremiumPlanInner />
 
 export default PremiumPlan

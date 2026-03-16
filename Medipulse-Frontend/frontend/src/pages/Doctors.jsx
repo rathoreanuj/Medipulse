@@ -22,6 +22,7 @@ const Doctors = () => {
       if (!aFeatured && bFeatured) return 1
       return 0
     })
+
     setFilterDoc(list)
   }
 
@@ -62,7 +63,7 @@ const Doctors = () => {
               >
                 <p className='font-medium text-sm'>General Physician</p>
               </div>
-              <div 
+              <div
                 onClick={() => speciality === 'Gynecologist' ? navigate('/doctors') : navigate('/doctors/Gynecologist')} 
                 className={`px-4 py-3 border-2 rounded-lg cursor-pointer transition-all duration-300 ${speciality === 'Gynecologist' ? 'bg-primary text-white border-primary shadow-md' : 'border-gray-200 hover:border-primary hover:bg-blue-50'}`}
               >

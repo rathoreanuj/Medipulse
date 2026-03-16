@@ -194,8 +194,11 @@ const MyProfile = () => {
                     </button>
                 )}
                 {/* Profile Picture Section */}
+                {(() => {
+                    const isPremiumActive = userData?.plan === 'premium' && userData?.planExpiry && new Date(userData.planExpiry) > new Date()
+                    return (
                 <div className='flex flex-col sm:flex-row items-center sm:items-start gap-6 pb-6 border-b'>
-                    <div className='relative'>
+                    <div className='relative inline-block'>
                         {isEdit ? (
                             <label htmlFor='image' className='cursor-pointer group'>
                                 <div className='relative'>
@@ -237,6 +240,17 @@ const MyProfile = () => {
                                 </div>
                             )
                         )}
+                        {/* Premium crown icon — bottom-right of avatar */}
+                        {isPremiumActive && (
+                            <span
+                                title='Premium Member'
+                                className='absolute bottom-1 right-1 w-7 h-7 rounded-full bg-white border-2 border-yellow-400 flex items-center justify-center shadow-md'
+                            >
+                                <svg className='w-4 h-4 text-yellow-500' viewBox='0 0 24 24' fill='currentColor'>
+                                    <path d='M2 19h20v2H2v-2zm2-3l3-8 5 4 5-7 3 11H4z'/>
+                                </svg>
+                            </span>
+                        )}
                     </div>
 
                     <div className='flex-1 text-center sm:text-left'>
@@ -265,6 +279,8 @@ const MyProfile = () => {
                         </p>
                     </div>
                 </div>
+                    )
+                })()}
 
                 {/* Contact Information */}
                 <div className='mt-8'>

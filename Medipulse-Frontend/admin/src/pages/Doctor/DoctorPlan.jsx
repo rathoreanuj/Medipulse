@@ -217,7 +217,7 @@ const DoctorPlanInner = () => {
       </div>
 
       {/* Featured Listing Card */}
-      <div className='bg-white rounded-xl border border-yellow-200 shadow-sm p-6'>
+      <div className='bg-white rounded-xl border-2 border-yellow-300 shadow-sm p-6'>
         <div className='flex flex-col sm:flex-row sm:items-center gap-4'>
           <div className='flex-1'>
             <div className='flex items-center gap-2 mb-2'>
@@ -240,7 +240,7 @@ const DoctorPlanInner = () => {
           <div className='flex-shrink-0'>
             {isFeatured ? (
               <div className='text-center'>
-                <span className='block text-sm font-semibold text-yellow-700 bg-yellow-50 px-4 py-2 rounded-lg'>⭐ Currently Featured</span>
+                <span className='block text-sm font-semibold text-yellow-700 bg-yellow-50 px-4 py-2 rounded-lg border border-yellow-200'>⭐ Currently Featured</span>
                 {featuredExpiry && <p className='text-xs text-gray-400 mt-1'>Expires {featuredExpiry}</p>}
                 <button
                   onClick={() => initiatePayment('featured_week', 'Featured Listing')}
@@ -252,7 +252,7 @@ const DoctorPlanInner = () => {
             ) : (
               <button
                 onClick={() => initiatePayment('featured_week', 'Featured Listing')}
-                className='px-6 py-2.5 bg-yellow-400 hover:bg-yellow-500 text-white font-semibold rounded-lg transition-colors whitespace-nowrap'
+                className='px-6 py-2.5 bg-yellow-400 hover:bg-yellow-500 text-white font-bold rounded-lg transition-colors whitespace-nowrap shadow'
               >
                 Get Featured — $5.99
               </button>
@@ -267,7 +267,7 @@ const DoctorPlanInner = () => {
           <div className='bg-white rounded-2xl shadow-xl p-6 w-full max-w-md'>
             <h3 className='text-lg font-bold text-gray-800 mb-1'>Complete Payment</h3>
             <p className='text-sm text-gray-500 mb-4'>{activeModal.label}</p>
-            <Elements stripe={stripePromise}>
+            <Elements stripe={stripePromise} options={{ clientSecret }}>
               <PaymentForm
                 clientSecret={clientSecret}
                 label={activeModal.label}
@@ -282,10 +282,6 @@ const DoctorPlanInner = () => {
   )
 }
 
-const DoctorPlan = () => (
-  <Elements stripe={stripePromise}>
-    <DoctorPlanInner />
-  </Elements>
-)
+const DoctorPlan = () => <DoctorPlanInner />
 
 export default DoctorPlan

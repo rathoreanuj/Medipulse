@@ -30,7 +30,7 @@ const Sidebar = () => {
           <p className='hidden md:block'>Doctors List</p>
         </NavLink>
         <NavLink to={'/revenue'} className={({ isActive }) => `flex items-center gap-3 py-3.5 px-3 md:px-9 md:min-w-72 cursor-pointer ${isActive ? 'bg-[#F2F3FF] border-r-4 border-primary' : ''}`}>
-          <img className='min-w-5' src={assets.earning_icon || assets.home_icon} alt='' />
+          <img className='min-w-5' src={assets.earning_icon} alt='' />
           <p className='hidden md:block'>Revenue</p>
         </NavLink>
       </ul>}
@@ -49,7 +49,7 @@ const Sidebar = () => {
           <p className='hidden md:block'>Profile</p>
         </NavLink>
         <NavLink to={'/doctor-plan'} className={({ isActive }) => `flex items-center gap-3 py-3.5 px-3 md:px-9 md:min-w-72 cursor-pointer ${isActive ? 'bg-[#F2F3FF] border-r-4 border-primary' : ''}`}>
-          <img className='min-w-5' src={assets.earning_icon || assets.home_icon} alt='' />
+          <img className='min-w-5' src={assets.earning_icon} alt='' />
           <p className='hidden md:block'>My Plan</p>
         </NavLink>
       </ul>}
