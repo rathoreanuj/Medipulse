@@ -130,7 +130,7 @@ const verifySubscriptionPayment = async (req, res) => {
 // ─── Admin Revenue Stats ──────────────────────────────────────────────────────
 const getAdminRevenueStats = async (req, res) => {
     try {
-        const appointments = await appointmentModel.find({ payment: true, cancelled: false });
+        const appointments = await appointmentModel.find({ payment: true, cancelled: false }).sort({ date: -1 });
         const doctors = await doctorModel.find({}).select('name plan planExpiry isFeatured featuredUntil');
         const users = await userModel.find({}).select('plan planExpiry');
 
