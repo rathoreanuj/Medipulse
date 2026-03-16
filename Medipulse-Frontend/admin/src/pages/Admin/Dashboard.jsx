@@ -165,9 +165,9 @@ const Dashboard = () => {
             </div>
             <div className='space-y-3'>
               {[
-                { label: 'Completed', value: completed, color: 'bg-green-500', textColor: 'text-green-600' },
-                { label: 'Pending', value: pending, color: 'bg-blue-500', textColor: 'text-blue-600' },
-                { label: 'Cancelled', value: cancelled, color: 'bg-red-400', textColor: 'text-red-500' },
+                { label: 'Completed', value: completed, color: 'bg-green-300', textColor: 'text-green-500' },
+                { label: 'Pending', value: pending, color: 'bg-blue-300', textColor: 'text-blue-500' },
+                { label: 'Cancelled', value: cancelled, color: 'bg-red-300', textColor: 'text-red-400' },
               ].map(({ label, value, color, textColor }) => (
                 <div key={label}>
                   <div className='flex justify-between text-sm mb-1'>
