@@ -15,6 +15,11 @@ const MyProfile = () => {
     const { token, backendUrl, userData, setUserData, loadUserProfileData } = useContext(AppContext)
 
     const getInitial = (name) => (name || 'U').trim().charAt(0).toUpperCase()
+    const isDefaultBackendAvatar = (img) =>
+        typeof img === 'string' &&
+        img.startsWith('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemS')
+
+    const hasUsableAvatar = !!userData?.image && !isDefaultBackendAvatar(userData.image)
 
     useEffect(() => {
         setProfileImageError(false)
@@ -187,7 +192,7 @@ const MyProfile = () => {
                         {isEdit ? (
                             <label htmlFor='image' className='cursor-pointer group'>
                                 <div className='relative'>
-                                    {image || (userData.image && !profileImageError) ? (
+                                    {image || (hasUsableAvatar && !profileImageError) ? (
                                         <img
                                             className='w-32 h-32 rounded-full object-cover border-4 border-primary shadow-lg group-hover:opacity-75 transition-opacity'
                                             src={image ? URL.createObjectURL(image) : userData.image}
@@ -212,7 +217,7 @@ const MyProfile = () => {
                                 />
                             </label>
                         ) : (
-                            userData.image && !profileImageError ? (
+                            hasUsableAvatar && !profileImageError ? (
                                 <img
                                     className='w-32 h-32 rounded-full object-cover border-4 border-primary shadow-lg'
                                     src={userData.image}

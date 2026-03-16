@@ -12,6 +12,11 @@ const Navbar = () => {
   const { token, setToken, userData } = useContext(AppContext)
 
   const getInitial = (name) => (name || 'U').trim().charAt(0).toUpperCase()
+  const isDefaultBackendAvatar = (image) =>
+    typeof image === 'string' &&
+    image.startsWith('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemS')
+
+  const hasUsableAvatar = !!userData?.image && !isDefaultBackendAvatar(userData.image)
 
   useEffect(() => {
     setAvatarError(false)
@@ -49,7 +54,7 @@ const Navbar = () => {
         {
           token && userData
             ? <div className='flex items-center gap-2 cursor-pointer group relative'>
-              {userData.image && !avatarError ? (
+              {hasUsableAvatar && !avatarError ? (
                 <img
                   className='w-8 h-8 rounded-full object-cover'
                   src={userData.image}

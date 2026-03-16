@@ -20,6 +20,11 @@ const DoctorChat = () => {
     const bottomRef = useRef(null)
 
     const getInitial = (name) => (name || 'P').trim().charAt(0).toUpperCase()
+    const isDefaultBackendAvatar = (img) =>
+        typeof img === 'string' &&
+        img.startsWith('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAADwCAYAAAA+VemS')
+
+    const hasUsablePatientAvatar = !!patientImage && !isDefaultBackendAvatar(patientImage)
 
     // Load message history
     useEffect(() => {
@@ -112,7 +117,7 @@ const DoctorChat = () => {
                     </svg>
                 </button>
                 <div className='relative shrink-0'>
-                    {patientImage && !patientImageError ? (
+                    {hasUsablePatientAvatar && !patientImageError ? (
                         <img
                             src={patientImage}
                             alt={patientName || 'Patient'}
