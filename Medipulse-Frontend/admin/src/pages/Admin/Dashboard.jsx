@@ -1,27 +1,25 @@
 import React, { useContext, useEffect } from 'react'
 import { AdminContext } from '../../context/AdminContext'
 import { AppContext } from '../../context/AppContext'
-import { useNavigate } from 'react-router-dom'
 import {
   LuStethoscope, LuCalendarDays, LuUsers, LuActivity,
   LuCheck, LuX, LuClock, LuArrowRight, LuTrendingUp
 } from 'react-icons/lu'
 
 // ─── Stat card ────────────────────────────────────────────────────────────────
-const StatCard = ({ label, value, icon, gradient, sub }) => (
-  <div className={`relative overflow-hidden rounded-2xl p-5 text-white shadow-sm ${gradient}`}>
+const StatCard = ({ label, value, icon, sub }) => (
+  <div className='relative overflow-hidden rounded-2xl p-5 bg-blue-50 border border-blue-100 shadow-sm'>
     <div className='flex items-start justify-between'>
       <div>
-        <p className='text-white/70 text-sm font-medium'>{label}</p>
-        <p className='text-3xl font-bold mt-1'>{value ?? '—'}</p>
-        {sub && <p className='text-white/60 text-xs mt-1'>{sub}</p>}
+        <p className='text-blue-500 text-sm font-medium'>{label}</p>
+        <p className='text-3xl font-bold mt-1 text-blue-800'>{value ?? '—'}</p>
+        {sub && <p className='text-blue-400 text-xs mt-1'>{sub}</p>}
       </div>
-      <div className='w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center'>
+      <div className='w-11 h-11 rounded-xl bg-blue-100 flex items-center justify-center'>
         {icon}
       </div>
     </div>
-    {/* decorative circle */}
-    <div className='absolute -bottom-4 -right-4 w-24 h-24 rounded-full bg-white/10' />
+    <div className='absolute -bottom-4 -right-4 w-24 h-24 rounded-full bg-blue-100/60' />
   </div>
 )
 
@@ -48,7 +46,6 @@ const StatusBadge = ({ item }) => {
 const Dashboard = () => {
   const { aToken, getDashData, cancelAppointment, dashData } = useContext(AdminContext)
   const { slotDateFormat } = useContext(AppContext)
-  const navigate = useNavigate()
 
   useEffect(() => {
     if (aToken) getDashData()
@@ -85,34 +82,29 @@ const Dashboard = () => {
         <p className='text-sm text-gray-500 mt-0.5'>Welcome back — here's what's happening today</p>
       </div>
 
-      {/* KPI cards */}
       <div className='grid grid-cols-2 xl:grid-cols-4 gap-4 mb-7'>
         <StatCard
           label='Total Doctors'
           value={dashData.doctors}
-          gradient='bg-gradient-to-br from-blue-500 to-blue-600'
-          icon={<LuStethoscope className='w-5 h-5 text-white' />}
+          icon={<LuStethoscope className='w-5 h-5 text-blue-500' />}
           sub='Registered on platform'
         />
         <StatCard
           label='Total Appointments'
           value={dashData.appointments}
-          gradient='bg-gradient-to-br from-violet-500 to-purple-600'
-          icon={<LuCalendarDays className='w-5 h-5 text-white' />}
+          icon={<LuCalendarDays className='w-5 h-5 text-blue-500' />}
           sub='All time'
         />
         <StatCard
           label='Total Patients'
           value={dashData.patients}
-          gradient='bg-gradient-to-br from-emerald-500 to-teal-600'
-          icon={<LuUsers className='w-5 h-5 text-white' />}
+          icon={<LuUsers className='w-5 h-5 text-blue-500' />}
           sub='Registered users'
         />
         <StatCard
           label='Active Today'
           value={pending}
-          gradient='bg-gradient-to-br from-orange-400 to-pink-500'
-          icon={<LuActivity className='w-5 h-5 text-white' />}
+          icon={<LuActivity className='w-5 h-5 text-blue-500' />}
           sub='Upcoming appointments'
         />
       </div>
@@ -221,24 +213,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Quick actions */}
-      <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
-        {[
-          { label: 'All Appointments', path: '/all-appointments', color: 'bg-violet-50 border-violet-100 text-violet-700 hover:bg-violet-100', icon: <LuCalendarDays className='w-5 h-5' /> },
-          { label: 'Add Doctor', path: '/add-doctor', color: 'bg-blue-50 border-blue-100 text-blue-700 hover:bg-blue-100', icon: <LuStethoscope className='w-5 h-5' /> },
-          { label: 'Doctors List', path: '/doctor-list', color: 'bg-emerald-50 border-emerald-100 text-emerald-700 hover:bg-emerald-100', icon: <LuUsers className='w-5 h-5' /> },
-          { label: 'Revenue', path: '/revenue', color: 'bg-orange-50 border-orange-100 text-orange-700 hover:bg-orange-100', icon: <LuActivity className='w-5 h-5' /> },
-        ].map(({ label, path, color, icon }) => (
-          <button
-            key={label}
-            onClick={() => navigate(path)}
-            className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border font-medium text-sm transition-colors ${color}`}
-          >
-            {icon}
-            {label}
-          </button>
-        ))}
-      </div>
     </div>
   )
 }
