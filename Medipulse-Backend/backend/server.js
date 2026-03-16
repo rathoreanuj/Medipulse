@@ -24,13 +24,31 @@ connectCloudinary()
 const allowedOrigins = [
   "https://medipulse-frontend.onrender.com",
   "https://medipulse-admin.onrender.com",
-  "http://localhost:3000",
-  "http://localhost:5173",
-  "http://localhost:5174"
+  "http://localhost:5175/",
+   "http://localhost:5174/",
+  "http://localhost:5173/",
+   "http://localhost:5176/",
+   "http://localhost:4000/",
 ]
 
+const isAllowedOrigin = (origin) => {
+  // Allow non-browser requests (no Origin header).
+  if (!origin) return true
+
+  if (allowedOrigins.includes(origin)) return true
+
+  // Allow any localhost dev origin, e.g. 3000, 5173, 5175, 5176.
+  return /^http:\/\/localhost:\d+$/.test(origin)
+}
+
 app.use(cors({
-  origin: allowedOrigins,
+  origin: (origin, callback) => {
+    if (isAllowedOrigin(origin)) {
+      callback(null, true)
+      return
+    }
+    callback(new Error("Not allowed by CORS"))
+  },
   credentials: true
 }))
 
@@ -54,7 +72,13 @@ const httpServer = createServer(app)
 
 const io = new Server(httpServer, {
   cors: {
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (isAllowedOrigin(origin)) {
+        callback(null, true)
+        return
+      }
+      callback(new Error("Not allowed by Socket.IO CORS"))
+    },
     methods: ["GET", "POST"],
     credentials: true
   }
