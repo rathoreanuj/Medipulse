@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { AppContext } from '../context/AppContext'
 import axios from 'axios'
 import { toast } from 'react-toastify'
@@ -10,8 +10,15 @@ const MyProfile = () => {
     const [image, setImage] = useState(false)
     const [errors, setErrors] = useState({})
     const [loading, setLoading] = useState(false)
+    const [profileImageError, setProfileImageError] = useState(false)
 
     const { token, backendUrl, userData, setUserData, loadUserProfileData } = useContext(AppContext)
+
+    const getInitial = (name) => (name || 'U').trim().charAt(0).toUpperCase()
+
+    useEffect(() => {
+        setProfileImageError(false)
+    }, [userData?.image])
 
     // Validation functions
     const validateName = (name) => {
@@ -180,11 +187,18 @@ const MyProfile = () => {
                         {isEdit ? (
                             <label htmlFor='image' className='cursor-pointer group'>
                                 <div className='relative'>
-                                    <img 
-                                        className='w-32 h-32 rounded-full object-cover border-4 border-primary shadow-lg group-hover:opacity-75 transition-opacity' 
-                                        src={image ? URL.createObjectURL(image) : userData.image} 
-                                        alt="Profile" 
-                                    />
+                                    {image || (userData.image && !profileImageError) ? (
+                                        <img
+                                            className='w-32 h-32 rounded-full object-cover border-4 border-primary shadow-lg group-hover:opacity-75 transition-opacity'
+                                            src={image ? URL.createObjectURL(image) : userData.image}
+                                            alt="Profile"
+                                            onError={() => setProfileImageError(true)}
+                                        />
+                                    ) : (
+                                        <div className='w-32 h-32 rounded-full border-4 border-primary shadow-lg bg-blue-50 text-primary flex items-center justify-center text-4xl font-bold'>
+                                            {getInitial(userData.name)}
+                                        </div>
+                                    )}
                                     <div className='absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity'>
                                         <img className='w-10 h-10' src={assets.upload_icon} alt="Upload" />
                                     </div>
@@ -198,11 +212,18 @@ const MyProfile = () => {
                                 />
                             </label>
                         ) : (
-                            <img 
-                                className='w-32 h-32 rounded-full object-cover border-4 border-primary shadow-lg' 
-                                src={userData.image} 
-                                alt="Profile" 
-                            />
+                            userData.image && !profileImageError ? (
+                                <img
+                                    className='w-32 h-32 rounded-full object-cover border-4 border-primary shadow-lg'
+                                    src={userData.image}
+                                    alt="Profile"
+                                    onError={() => setProfileImageError(true)}
+                                />
+                            ) : (
+                                <div className='w-32 h-32 rounded-full border-4 border-primary shadow-lg bg-blue-50 text-primary flex items-center justify-center text-4xl font-bold'>
+                                    {getInitial(userData.name)}
+                                </div>
+                            )
                         )}
                     </div>
 

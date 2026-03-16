@@ -13,9 +13,13 @@ const Chat = () => {
     const [messages, setMessages] = useState([])
     const [input, setInput] = useState('')
     const [docName, setDocName] = useState('')
+    const [docImage, setDocImage] = useState('')
+    const [docImageError, setDocImageError] = useState(false)
     const [connected, setConnected] = useState(false)
     const socketRef = useRef(null)
     const bottomRef = useRef(null)
+
+    const getInitial = (name) => (name || 'D').trim().charAt(0).toUpperCase()
 
     // Load message history
     useEffect(() => {
@@ -72,7 +76,11 @@ const Chat = () => {
             try {
                 const { data } = await axios.get(backendUrl + '/api/user/appointments', { headers: { token } })
                 const appt = data.appointments?.find(a => a._id === appointmentId)
-                if (appt) setDocName(appt.docData.name)
+                if (appt) {
+                    setDocName(appt.docData?.name || '')
+                    setDocImage(appt.docData?.image || '')
+                    setDocImageError(false)
+                }
             } catch (_) {}
         }
         fetchAppointment()
@@ -103,9 +111,28 @@ const Chat = () => {
                         <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 19l-7-7 7-7' />
                     </svg>
                 </button>
+                <div className='relative shrink-0'>
+                    {docImage && !docImageError ? (
+                        <img
+                            src={docImage}
+                            alt={docName || 'Doctor'}
+                            className='w-10 h-10 rounded-full object-cover border border-gray-200 bg-white'
+                            onError={() => setDocImageError(true)}
+                        />
+                    ) : (
+                        <div className='w-10 h-10 rounded-full border border-gray-200 bg-blue-50 text-primary flex items-center justify-center font-semibold'>
+                            {getInitial(docName)}
+                        </div>
+                    )}
+                    <span
+                        className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${
+                            connected ? 'bg-green-500' : 'bg-red-400'
+                        }`}
+                    />
+                </div>
                 <div>
                     <h1 className='text-xl font-bold text-gray-800'>{docName || 'Doctor'}</h1>
-                    <p className='text-xs text-gray-500'>{connected ? '🟢 Connected' : '🔴 Connecting...'}</p>
+                    <p className='text-xs text-gray-500'>{connected ? 'Connected' : 'Connecting...'}</p>
                 </div>
             </div>
 

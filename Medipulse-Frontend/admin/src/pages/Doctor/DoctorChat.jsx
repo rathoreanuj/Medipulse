@@ -13,9 +13,13 @@ const DoctorChat = () => {
     const [messages, setMessages] = useState([])
     const [input, setInput] = useState('')
     const [patientName, setPatientName] = useState('')
+    const [patientImage, setPatientImage] = useState('')
+    const [patientImageError, setPatientImageError] = useState(false)
     const [connected, setConnected] = useState(false)
     const socketRef = useRef(null)
     const bottomRef = useRef(null)
+
+    const getInitial = (name) => (name || 'P').trim().charAt(0).toUpperCase()
 
     // Load message history
     useEffect(() => {
@@ -72,7 +76,11 @@ const DoctorChat = () => {
             try {
                 const { data } = await axios.get(backendUrl + '/api/doctor/appointments', { headers: { dtoken: dToken } })
                 const appt = data.appointments?.find(a => a._id === appointmentId)
-                if (appt) setPatientName(appt.userData.name)
+                if (appt) {
+                    setPatientName(appt.userData?.name || '')
+                    setPatientImage(appt.userData?.image || '')
+                    setPatientImageError(false)
+                }
             } catch (_) {}
         }
         fetchAppointment()
@@ -103,9 +111,28 @@ const DoctorChat = () => {
                         <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 19l-7-7 7-7' />
                     </svg>
                 </button>
+                <div className='relative shrink-0'>
+                    {patientImage && !patientImageError ? (
+                        <img
+                            src={patientImage}
+                            alt={patientName || 'Patient'}
+                            className='w-10 h-10 rounded-full object-cover border border-gray-200 bg-white'
+                            onError={() => setPatientImageError(true)}
+                        />
+                    ) : (
+                        <div className='w-10 h-10 rounded-full border border-gray-200 bg-blue-50 text-primary flex items-center justify-center font-semibold'>
+                            {getInitial(patientName)}
+                        </div>
+                    )}
+                    <span
+                        className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${
+                            connected ? 'bg-green-500' : 'bg-red-400'
+                        }`}
+                    />
+                </div>
                 <div>
                     <h1 className='text-xl font-bold text-gray-800'>{patientName || 'Patient'}</h1>
-                    <p className='text-xs text-gray-500'>{connected ? '🟢 Connected' : '🔴 Connecting...'}</p>
+                    <p className='text-xs text-gray-500'>{connected ? 'Connected' : 'Connecting...'}</p>
                 </div>
             </div>
 
