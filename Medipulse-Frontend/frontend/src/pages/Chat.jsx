@@ -53,15 +53,32 @@ const Chat = () => {
             socket.emit('join-room', { appointmentId, token, senderType: 'user' })
         })
 
-        socket.on('joined', () => setConnected(true))
+        socket.on('joined', () => {
+            setConnected(true)
+        })
 
         socket.on('new-message', (msg) => {
             setMessages((prev) => [...prev, msg])
         })
 
+        socket.on('disconnect', () => {
+            setConnected(false)
+        })
+
+        socket.on('connect_error', () => {
+            setConnected(false)
+        })
+
+        socket.io.on('reconnect_attempt', () => {
+            setConnected(false)
+        })
+
         socket.on('error', (msg) => toast.error(msg))
 
-        return () => socket.disconnect()
+        return () => {
+            socket.io.off('reconnect_attempt')
+            socket.disconnect()
+        }
     }, [token, appointmentId, backendUrl])
 
     // Scroll to bottom on new message
@@ -124,15 +141,9 @@ const Chat = () => {
                             {getInitial(docName)}
                         </div>
                     )}
-                    <span
-                        className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${
-                            connected ? 'bg-green-500' : 'bg-red-400'
-                        }`}
-                    />
                 </div>
                 <div>
                     <h1 className='text-xl font-bold text-gray-800'>{docName || 'Doctor'}</h1>
-                    <p className='text-xs text-gray-500'>{connected ? 'Connected' : 'Connecting...'}</p>
                 </div>
             </div>
 
