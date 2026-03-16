@@ -7,7 +7,7 @@ import { toast } from 'react-toastify'
 
 const Chat = () => {
     const { appointmentId } = useParams()
-    const { backendUrl, token, userData } = useContext(AppContext)
+    const { backendUrl, token } = useContext(AppContext)
     const navigate = useNavigate()
 
     const [messages, setMessages] = useState([])
@@ -17,7 +17,7 @@ const Chat = () => {
     const [docImageError, setDocImageError] = useState(false)
     const [connected, setConnected] = useState(false)
     const socketRef = useRef(null)
-    const bottomRef = useRef(null)
+    const messagesContainerRef = useRef(null)
 
     const getInitial = (name) => (name || 'D').trim().charAt(0).toUpperCase()
 
@@ -81,9 +81,10 @@ const Chat = () => {
         }
     }, [token, appointmentId, backendUrl])
 
-    // Scroll to bottom on new message
+    // Keep message list pinned without scrolling the whole page.
     useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+        if (!messagesContainerRef.current) return
+        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
     }, [messages])
 
     // Fetch doctor name from appointment
@@ -98,7 +99,9 @@ const Chat = () => {
                     setDocImage(appt.docData?.image || '')
                     setDocImageError(false)
                 }
-            } catch (_) {}
+            } catch (error) {
+                console.log(error)
+            }
         }
         fetchAppointment()
     }, [token, appointmentId, backendUrl])
@@ -148,7 +151,7 @@ const Chat = () => {
             </div>
 
             {/* Messages */}
-            <div className='flex-1 overflow-y-auto bg-gray-50 rounded-xl p-4 space-y-3'>
+            <div ref={messagesContainerRef} className='flex-1 overflow-y-auto bg-gray-50 rounded-xl p-4 space-y-3'>
                 {messages.length === 0 && (
                     <p className='text-center text-gray-400 text-sm mt-8'>No messages yet. Start the conversation!</p>
                 )}
@@ -169,7 +172,6 @@ const Chat = () => {
                         </div>
                     )
                 })}
-                <div ref={bottomRef} />
             </div>
 
             {/* Input */}

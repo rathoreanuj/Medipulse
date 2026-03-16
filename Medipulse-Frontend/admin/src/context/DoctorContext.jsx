@@ -1,6 +1,7 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useRef, useState } from "react";
 import axios from 'axios'
 import { toast } from 'react-toastify'
+import { io } from 'socket.io-client'
 
 
 export const DoctorContext = createContext()
@@ -13,6 +14,76 @@ const DoctorContextProvider = (props) => {
     const [appointments, setAppointments] = useState([])
     const [dashData, setDashData] = useState(false)
     const [profileData, setProfileData] = useState(false)
+    const [notifications, setNotifications] = useState([])
+    const [unreadNotifications, setUnreadNotifications] = useState(0)
+    const notificationSocketRef = useRef(null)
+
+    const loadNotifications = async () => {
+        if (!dToken) {
+            setNotifications([])
+            setUnreadNotifications(0)
+            return
+        }
+
+        try {
+            const { data } = await axios.get(backendUrl + '/api/notification/doctor', { headers: { dToken } })
+            if (data.success) {
+                setNotifications(data.notifications || [])
+                setUnreadNotifications(data.unreadCount || 0)
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    const markNotificationAsRead = async (notificationId) => {
+        if (!dToken || !notificationId) return
+
+        setNotifications((prev) => prev.map((item) => (
+            item._id === notificationId ? { ...item, isRead: true } : item
+        )))
+
+        try {
+            const { data } = await axios.post(
+                backendUrl + '/api/notification/doctor/mark-read',
+                { notificationId },
+                { headers: { dToken } }
+            )
+            if (data.success) {
+                setUnreadNotifications(data.unreadCount || 0)
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    const markAllNotificationsAsRead = async () => {
+        if (!dToken) return
+
+        setNotifications((prev) => prev.map((item) => ({ ...item, isRead: true })))
+
+        try {
+            const { data } = await axios.post(
+                backendUrl + '/api/notification/doctor/mark-all-read',
+                {},
+                { headers: { dToken } }
+            )
+            if (data.success) {
+                setUnreadNotifications(0)
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    useEffect(() => {
+        if (dToken) {
+            loadNotifications()
+        } else {
+            setNotifications([])
+            setUnreadNotifications(0)
+        }
+    }, [dToken])
 
     const getAppointments = async () => {
         try {
@@ -104,6 +175,36 @@ const DoctorContextProvider = (props) => {
 
     }
 
+    useEffect(() => {
+        if (!dToken || !backendUrl) return
+
+        const socket = io(backendUrl, { transports: ['websocket'] })
+        notificationSocketRef.current = socket
+
+        socket.on('connect', () => {
+            socket.emit('join-notification-room', { dtoken: dToken, senderType: 'doctor' })
+        })
+
+        socket.on('chat-notification', (payload) => {
+            if (payload?.senderType !== 'user') return
+            const senderName = payload?.senderName || 'Patient'
+            const preview = payload?.message || 'You have a new message.'
+            toast.info(`${senderName}: ${preview}`)
+        })
+
+        socket.on('notification-created', (notification) => {
+            if (!notification) return
+            setNotifications((prev) => [notification, ...prev].slice(0, 30))
+            setUnreadNotifications((prev) => prev + 1)
+            toast.info(notification.title)
+        })
+
+        return () => {
+            socket.disconnect()
+            notificationSocketRef.current = null
+        }
+    }, [dToken, backendUrl])
+
     const value = {
         dToken, setDToken, backendUrl,
         appointments,
@@ -113,6 +214,11 @@ const DoctorContextProvider = (props) => {
         dashData, getDashData,
         profileData, setProfileData,
         getProfileData,
+        notifications,
+        unreadNotifications,
+        loadNotifications,
+        markNotificationAsRead,
+        markAllNotificationsAsRead,
     }
 
     return (

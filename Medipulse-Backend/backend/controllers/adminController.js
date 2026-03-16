@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import validator from "validator";
 import { v2 as cloudinary } from "cloudinary";
 import userModel from "../models/userModel.js";
+import { createNotification } from "../services/notificationService.js";
 
 // this is the login controller
 const loginAdmin = async (req, res) => {
@@ -35,7 +36,41 @@ const appointmentsAdmin = async (req, res) => {
 const appointmentCancel = async (req, res) => {
     try {
         const { appointmentId } = req.body;
+        const appointmentData = await appointmentModel.findById(appointmentId);
         await appointmentModel.findByIdAndUpdate(appointmentId, { cancelled: true });
+
+        if (appointmentData) {
+            await createNotification({
+                recipientType: 'user',
+                recipientId: appointmentData.userId,
+                type: 'appointment',
+                title: 'Appointment cancelled by admin',
+                message: `Your appointment on ${appointmentData.slotDate} at ${appointmentData.slotTime} was cancelled by admin.`,
+                link: '/my-appointments',
+                meta: { appointmentId }
+            });
+
+            await createNotification({
+                recipientType: 'doctor',
+                recipientId: appointmentData.docId,
+                type: 'appointment',
+                title: 'Appointment cancelled by admin',
+                message: `An appointment on ${appointmentData.slotDate} at ${appointmentData.slotTime} was cancelled by admin.`,
+                link: '/doctor-appointments',
+                meta: { appointmentId }
+            });
+        }
+
+        await createNotification({
+            recipientType: 'admin',
+            recipientId: 'global',
+            type: 'system',
+            title: 'Appointment cancelled',
+            message: `Admin cancelled appointment ${appointmentId}.`,
+            link: '/all-appointments',
+            meta: { appointmentId }
+        });
+
         res.json({ success: true, message: 'Appointment Cancelled' });
     } catch (error) {
         console.log(error);
@@ -75,6 +110,17 @@ const addDoctor = async (req, res) => {
         };
         const newDoctor = new doctorModel(doctorData);
         await newDoctor.save();
+
+        await createNotification({
+            recipientType: 'admin',
+            recipientId: 'global',
+            type: 'system',
+            title: 'Doctor added',
+            message: `${name} was added to the platform.`,
+            link: '/doctor-list',
+            meta: { doctorId: newDoctor._id }
+        });
+
         res.json({ success: true, message: 'Doctor Added' });
     } catch (error) {
         console.log(error);
@@ -156,12 +202,24 @@ const publicStats = async (req, res) => {
 const deleteDoctor = async (req, res) => {
     try {
         const { docId } = req.body;
+        const doctorData = await doctorModel.findById(docId);
         await doctorModel.findByIdAndDelete(docId);
         // Also cancel all future appointments for this doctor
         await appointmentModel.updateMany(
             { docId, cancelled: false, isCompleted: false },
             { cancelled: true }
         );
+
+        await createNotification({
+            recipientType: 'admin',
+            recipientId: 'global',
+            type: 'system',
+            title: 'Doctor deleted',
+            message: `${doctorData?.name || 'Doctor'} was removed from the platform.`,
+            link: '/doctor-list',
+            meta: { doctorId: docId }
+        });
+
         res.json({ success: true, message: 'Doctor Deleted' });
     } catch (error) {
         console.log(error);

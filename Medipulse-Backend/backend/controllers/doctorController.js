@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import doctorModel from "../models/doctorModel.js";
 import appointmentModel from "../models/appointmentModel.js";
+import { createNotification } from "../services/notificationService.js";
 
 const loginDoctor = async (req, res) => {
 
@@ -52,6 +53,37 @@ const appointmentCancel = async (req, res) => {
         const appointmentData = await appointmentModel.findById(appointmentId)
         if (appointmentData && appointmentData.docId === docId) {
             await appointmentModel.findByIdAndUpdate(appointmentId, { cancelled: true })
+
+            await createNotification({
+                recipientType: 'doctor',
+                recipientId: docId,
+                type: 'appointment',
+                title: 'Appointment cancelled',
+                message: `You cancelled ${appointmentData.slotDate} at ${appointmentData.slotTime}.`,
+                link: '/doctor-appointments',
+                meta: { appointmentId }
+            })
+
+            await createNotification({
+                recipientType: 'user',
+                recipientId: appointmentData.userId,
+                type: 'appointment',
+                title: 'Appointment cancelled by doctor',
+                message: `${appointmentData.docData?.name || 'Doctor'} cancelled your appointment on ${appointmentData.slotDate} at ${appointmentData.slotTime}.`,
+                link: '/my-appointments',
+                meta: { appointmentId }
+            })
+
+            await createNotification({
+                recipientType: 'admin',
+                recipientId: 'global',
+                type: 'appointment',
+                title: 'Doctor cancelled appointment',
+                message: `${appointmentData.docData?.name || 'Doctor'} cancelled an appointment.`,
+                link: '/all-appointments',
+                meta: { appointmentId }
+            })
+
             return res.json({ success: true, message: 'Appointment Cancelled' })
         }
 
@@ -104,6 +136,36 @@ const appointmentComplete = async (req, res) => {
                 payment: result.payment
             });
             console.log('=== END DEBUG ===');
+
+            await createNotification({
+                recipientType: 'doctor',
+                recipientId: docId,
+                type: 'appointment',
+                title: 'Appointment marked completed',
+                message: `You marked ${appointmentData.slotDate} at ${appointmentData.slotTime} as completed.`,
+                link: '/doctor-appointments',
+                meta: { appointmentId }
+            })
+
+            await createNotification({
+                recipientType: 'user',
+                recipientId: appointmentData.userId,
+                type: 'appointment',
+                title: 'Appointment completed',
+                message: `${appointmentData.docData?.name || 'Doctor'} marked your appointment as completed.`,
+                link: '/my-appointments',
+                meta: { appointmentId }
+            })
+
+            await createNotification({
+                recipientType: 'admin',
+                recipientId: 'global',
+                type: 'appointment',
+                title: 'Appointment completed',
+                message: `${appointmentData.docData?.name || 'Doctor'} completed an appointment.`,
+                link: '/all-appointments',
+                meta: { appointmentId }
+            })
             
             return res.json({ success: true, message: 'Appointment Completed' })
         }

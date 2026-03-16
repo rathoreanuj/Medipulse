@@ -17,7 +17,7 @@ const DoctorChat = () => {
     const [patientImageError, setPatientImageError] = useState(false)
     const [connected, setConnected] = useState(false)
     const socketRef = useRef(null)
-    const bottomRef = useRef(null)
+    const messagesContainerRef = useRef(null)
 
     const getInitial = (name) => (name || 'P').trim().charAt(0).toUpperCase()
     const isDefaultBackendAvatar = (img) =>
@@ -86,9 +86,10 @@ const DoctorChat = () => {
         }
     }, [dToken, appointmentId, backendUrl])
 
-    // Scroll to bottom on new message
+    // Keep message list pinned without scrolling the whole page.
     useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+        if (!messagesContainerRef.current) return
+        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
     }, [messages])
 
     // Fetch patient name from appointment list
@@ -103,7 +104,9 @@ const DoctorChat = () => {
                     setPatientImage(appt.userData?.image || '')
                     setPatientImageError(false)
                 }
-            } catch (_) {}
+            } catch (error) {
+                console.log(error)
+            }
         }
         fetchAppointment()
     }, [dToken, appointmentId, backendUrl])
@@ -153,7 +156,7 @@ const DoctorChat = () => {
             </div>
 
             {/* Messages */}
-            <div className='flex-1 overflow-y-auto bg-gray-50 rounded-xl p-4 space-y-3 border border-gray-200'>
+            <div ref={messagesContainerRef} className='flex-1 overflow-y-auto bg-gray-50 rounded-xl p-4 space-y-3 border border-gray-200'>
                 {messages.length === 0 && (
                     <p className='text-center text-gray-400 text-sm mt-8'>No messages yet. Start the conversation!</p>
                 )}
@@ -174,7 +177,6 @@ const DoctorChat = () => {
                         </div>
                     )
                 })}
-                <div ref={bottomRef} />
             </div>
 
             {/* Input */}

@@ -5,6 +5,7 @@ import userModel from "../models/userModel.js";
 import doctorModel from "../models/doctorModel.js";
 import appointmentModel from "../models/appointmentModel.js";
 import { v2 as cloudinary } from 'cloudinary';
+import { createNotification } from "../services/notificationService.js";
 
 const registerUser = async (req, res) => {
     try {
@@ -117,6 +118,37 @@ const bookAppointment = async (req, res) => {
         const newAppointment = new appointmentModel(appointmentData);
         await newAppointment.save();
         await doctorModel.findByIdAndUpdate(docId, { slots_booked });
+
+        await createNotification({
+            recipientType: 'user',
+            recipientId: userId,
+            type: 'appointment',
+            title: 'Appointment booked',
+            message: `Your appointment with ${docData.name} is confirmed for ${slotDate} at ${slotTime}.`,
+            link: '/my-appointments',
+            meta: { appointmentId: newAppointment._id }
+        });
+
+        await createNotification({
+            recipientType: 'doctor',
+            recipientId: docId,
+            type: 'appointment',
+            title: 'New appointment booked',
+            message: `${userData.name} booked ${slotDate} at ${slotTime}.`,
+            link: '/doctor-appointments',
+            meta: { appointmentId: newAppointment._id }
+        });
+
+        await createNotification({
+            recipientType: 'admin',
+            recipientId: 'global',
+            type: 'appointment',
+            title: 'New appointment created',
+            message: `${userData.name} booked with ${docData.name}.`,
+            link: '/all-appointments',
+            meta: { appointmentId: newAppointment._id }
+        });
+
         res.json({ success: true, message: 'Appointment Booked', appointmentId: newAppointment._id });
     } catch (error) {
         console.log(error);
@@ -137,6 +169,37 @@ const cancelAppointment = async (req, res) => {
         let slots_booked = doctorData.slots_booked;
         slots_booked[slotDate] = slots_booked[slotDate].filter(e => e !== slotTime);
         await doctorModel.findByIdAndUpdate(docId, { slots_booked });
+
+        await createNotification({
+            recipientType: 'user',
+            recipientId: userId,
+            type: 'appointment',
+            title: 'Appointment cancelled',
+            message: `You cancelled your appointment on ${slotDate} at ${slotTime}.`,
+            link: '/my-appointments',
+            meta: { appointmentId }
+        });
+
+        await createNotification({
+            recipientType: 'doctor',
+            recipientId: docId,
+            type: 'appointment',
+            title: 'Appointment cancelled by patient',
+            message: `${appointmentData.userData?.name || 'A patient'} cancelled ${slotDate} at ${slotTime}.`,
+            link: '/doctor-appointments',
+            meta: { appointmentId }
+        });
+
+        await createNotification({
+            recipientType: 'admin',
+            recipientId: 'global',
+            type: 'appointment',
+            title: 'Appointment cancelled',
+            message: `${appointmentData.userData?.name || 'Patient'} cancelled with ${appointmentData.docData?.name || 'doctor'}.`,
+            link: '/all-appointments',
+            meta: { appointmentId }
+        });
+
         res.json({ success: true, message: 'Appointment Cancelled' });
     } catch (error) {
         console.log(error);
