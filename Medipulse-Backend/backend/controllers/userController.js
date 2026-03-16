@@ -1,11 +1,13 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 import validator from "validator";
 import userModel from "../models/userModel.js";
 import doctorModel from "../models/doctorModel.js";
 import appointmentModel from "../models/appointmentModel.js";
 import { v2 as cloudinary } from 'cloudinary';
 import { createNotification } from "../services/notificationService.js";
+import { sendOtpEmail } from "../services/emailService.js";
 
 const registerUser = async (req, res) => {
     try {
@@ -40,12 +42,74 @@ const loginUser = async (req, res) => {
             return res.json({ success: false, message: "User does not exist" });
         }
         const isMatch = await bcrypt.compare(password, user.password);
-        if (isMatch) {
-            const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-            res.json({ success: true, token });
-        } else {
-            res.json({ success: false, message: "Invalid credentials" });
+        if (!isMatch) {
+            return res.json({ success: false, message: "Invalid credentials" });
         }
+
+        // Generate a 6-digit OTP
+        const otp = crypto.randomInt(100000, 999999).toString();
+        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+        // Save OTP to user record
+        await userModel.findByIdAndUpdate(user._id, { otp, otpExpiry });
+
+        // Send OTP via email
+        await sendOtpEmail(user.email, otp, user.name);
+
+        // Return a short-lived temp token (used to identify the user when verifying OTP)
+        const tempToken = jwt.sign(
+            { id: user._id, purpose: 'otp-verification' },
+            process.env.JWT_SECRET,
+            { expiresIn: '10m' }
+        );
+
+        res.json({ success: true, requiresOtp: true, tempToken });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+const verifyOtp = async (req, res) => {
+    try {
+        const { otp, tempToken } = req.body;
+        if (!otp || !tempToken) {
+            return res.json({ success: false, message: 'OTP and token are required' });
+        }
+
+        // Verify temp token
+        let decoded;
+        try {
+            decoded = jwt.verify(tempToken, process.env.JWT_SECRET);
+        } catch {
+            return res.json({ success: false, message: 'Session expired. Please login again.' });
+        }
+
+        if (decoded.purpose !== 'otp-verification') {
+            return res.json({ success: false, message: 'Invalid token' });
+        }
+
+        const user = await userModel.findById(decoded.id);
+        if (!user) {
+            return res.json({ success: false, message: 'User not found' });
+        }
+
+        // Check OTP expiry
+        if (!user.otpExpiry || new Date() > user.otpExpiry) {
+            return res.json({ success: false, message: 'OTP has expired. Please login again.' });
+        }
+
+        // Check OTP match
+        if (user.otp !== otp.trim()) {
+            return res.json({ success: false, message: 'Invalid OTP. Please try again.' });
+        }
+
+        // Clear OTP fields
+        await userModel.findByIdAndUpdate(user._id, { otp: null, otpExpiry: null });
+
+        // Issue full JWT
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+        res.json({ success: true, token });
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: error.message });
@@ -220,6 +284,7 @@ const listAppointment = async (req, res) => {
 
 export {
     loginUser,
+    verifyOtp,
     registerUser,
     getProfile,
     updateProfile,

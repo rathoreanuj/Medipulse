@@ -11,6 +11,8 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true },
     plan: { type: String, enum: ['free', 'premium'], default: 'free' },
     planExpiry: { type: Date, default: null },
+    otp: { type: String, default: null },
+    otpExpiry: { type: Date, default: null },
 })
 
 const userModel = mongoose.models.user || mongoose.model("user", userSchema);
