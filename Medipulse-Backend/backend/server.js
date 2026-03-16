@@ -270,16 +270,6 @@ io.on("connection", (socket) => {
           meta: { appointmentId }
         })
 
-        await createSystemNotification({
-          recipientType: 'admin',
-          recipientId: 'global',
-          type: 'chat',
-          title: 'New chat activity',
-          message: `${senderName} sent a chat message.`,
-          link: '/all-appointments',
-          meta: { appointmentId, senderType: 'user' }
-        })
-
         const doctorRecord = appointment.docData?.email ? null : await doctorModel.findById(appointment.docId).select('email')
         const doctorEmail = appointment.docData?.email || doctorRecord?.email
         sendChatNotificationEmail({
@@ -306,16 +296,6 @@ io.on("connection", (socket) => {
           message: shortMessage,
           link: `/chat/${appointmentId}`,
           meta: { appointmentId }
-        })
-
-        await createSystemNotification({
-          recipientType: 'admin',
-          recipientId: 'global',
-          type: 'chat',
-          title: 'New chat activity',
-          message: `${senderName} replied in chat.`,
-          link: '/all-appointments',
-          meta: { appointmentId, senderType: 'doctor' }
         })
 
         const userRecord = appointment.userData?.email ? null : await userModel.findById(appointment.userId).select('email')

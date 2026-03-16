@@ -185,18 +185,14 @@ const DoctorContextProvider = (props) => {
             socket.emit('join-notification-room', { dtoken: dToken, senderType: 'doctor' })
         })
 
-        socket.on('chat-notification', (payload) => {
-            if (payload?.senderType !== 'user') return
-            const senderName = payload?.senderName || 'Patient'
-            const preview = payload?.message || 'You have a new message.'
-            toast.info(`${senderName}: ${preview}`)
+        socket.on('chat-notification', (_payload) => {
+            // handled silently — notification-created covers the list update
         })
 
         socket.on('notification-created', (notification) => {
             if (!notification) return
             setNotifications((prev) => [notification, ...prev].slice(0, 30))
             setUnreadNotifications((prev) => prev + 1)
-            toast.info(notification.title)
         })
 
         return () => {

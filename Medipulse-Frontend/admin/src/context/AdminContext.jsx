@@ -204,7 +204,7 @@ const AdminContextProvider = (props) => {
             if (!notification) return
             setNotifications((prev) => [notification, ...prev].slice(0, 30))
             setUnreadNotifications((prev) => prev + 1)
-            toast.info(notification.title)
+            // No toast: notifications are added silently to UI
         })
 
         return () => {

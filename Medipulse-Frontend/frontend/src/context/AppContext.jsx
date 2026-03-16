@@ -6,7 +6,6 @@ import { io } from 'socket.io-client'
 export const AppContext = createContext()
 
 const AppContextProvider = (props) => {
-
     const currencySymbol = '₹'
     const backendUrl = import.meta.env.VITE_BACKEND_URL
 
@@ -137,18 +136,14 @@ const AppContextProvider = (props) => {
             socket.emit('join-notification-room', { token, senderType: 'user' })
         })
 
-        socket.on('chat-notification', (payload) => {
-            if (payload?.senderType !== 'doctor') return
-            const senderName = payload?.senderName || 'Doctor'
-            const preview = payload?.message || 'You have a new message.'
-            toast.info(`${senderName}: ${preview}`)
+        socket.on('chat-notification', (_payload) => {
+            // handled silently — notification-created covers the list update
         })
 
         socket.on('notification-created', (notification) => {
             if (!notification) return
             setNotifications((prev) => [notification, ...prev].slice(0, 30))
             setUnreadNotifications((prev) => prev + 1)
-            toast.info(notification.title)
         })
 
         return () => {
