@@ -127,6 +127,7 @@ const VideoConsultation = () => {
   }, [createPeerConnection])
 
   const startTimer = () => {
+    if (timerRef.current) return // already running — don't start a second interval
     timerRef.current = setInterval(() => setCallDuration(d => d + 1), 1000)
   }
 
@@ -302,9 +303,9 @@ const VideoConsultation = () => {
   }
 
   return (
-    <div className='min-h-screen bg-gray-900 flex flex-col'>
+    <div className='fixed inset-0 z-50 bg-gray-900 flex flex-col'>
       {/* Header */}
-      <div className='flex items-center justify-between px-6 py-4 bg-gray-800'>
+      <div className='flex items-center justify-between px-6 py-4 bg-gray-800 flex-shrink-0'>
         <div className='flex items-center gap-3'>
           {appointment?.doctorImage && (
             <img src={appointment.doctorImage} className='w-9 h-9 rounded-full object-cover border-2 border-gray-600' alt='' />
@@ -383,7 +384,7 @@ const VideoConsultation = () => {
       </div>
 
       {/* Controls */}
-      <div className='bg-gray-800 px-6 py-5 flex items-center justify-center gap-4'>
+      <div className='bg-gray-800 px-6 py-5 flex items-center justify-center gap-4 flex-shrink-0'>
         {/* Mute */}
         <button
           onClick={toggleMute}
