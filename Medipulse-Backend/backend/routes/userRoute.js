@@ -1,6 +1,7 @@
 import express from 'express';
 import { loginUser, registerUser, verifyOtp, forgotPassword, resetPassword, getProfile, updateProfile, bookAppointment, listAppointment, cancelAppointment, submitReview, getDoctorReviews, getUserReviewedAppointments } 
      from '../controllers/userController.js';
+import { googleAuth } from '../controllers/googleAuthController.js';
 import upload from '../middleware/multer.js';
 import authUser from '../middleware/authUser.js';
 import { authLimiter } from '../middleware/rateLimiter.js';
@@ -11,6 +12,7 @@ userRouter.post("/login", authLimiter, loginUser)
 userRouter.post("/verify-otp", authLimiter, verifyOtp)
 userRouter.post("/forgot-password", authLimiter, forgotPassword)
 userRouter.post("/reset-password", authLimiter, resetPassword)
+userRouter.post("/google-auth", authLimiter, googleAuth)
 
 userRouter.get("/get-profile", authUser, getProfile)
 userRouter.post("/update-profile", upload.single('image'), authUser, updateProfile)

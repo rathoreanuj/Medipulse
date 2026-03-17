@@ -229,9 +229,18 @@ const Appointment = () => {
 
                     {/* Appointment Fee */}
                     <div className='pt-4 border-t border-gray-200 flex items-center justify-between flex-wrap gap-3'>
-                        <p className='text-sm text-gray-600'>
-                            Appointment fee: <span className='text-lg font-semibold text-gray-800'>{currencySymbol}{docInfo.fees}</span>
-                        </p>
+                        <div>
+                            <p className='text-sm text-gray-500 mb-0.5'>Appointment fee</p>
+                            {consultationType === 'video' ? (
+                                <div className='flex items-center gap-2'>
+                                    <span className='text-sm text-gray-400 line-through'>{currencySymbol}{docInfo.fees}</span>
+                                    <span className='text-lg font-bold text-green-600'>{currencySymbol}{Math.round(docInfo.fees * 0.8)}</span>
+                                    <span className='text-xs font-semibold text-green-700 bg-green-100 px-1.5 py-0.5 rounded-full'>20% off</span>
+                                </div>
+                            ) : (
+                                <span className='text-lg font-semibold text-gray-800'>{currencySymbol}{docInfo.fees}</span>
+                            )}
+                        </div>
                         {/* Rating Summary */}
                         {docInfo.totalReviews > 0 ? (
                             <div className='flex items-center gap-2'>
@@ -342,6 +351,9 @@ const Appointment = () => {
                                 <div>
                                     <p className='font-medium text-gray-800 text-sm'>Video Consultation</p>
                                     <p className='text-xs text-gray-500'>Online video call</p>
+                                    <span className='inline-block mt-1 text-[11px] font-semibold text-green-700 bg-green-100 px-1.5 py-0.5 rounded-full'>
+                                        20% off fee
+                                    </span>
                                 </div>
                             </div>
                         </label>

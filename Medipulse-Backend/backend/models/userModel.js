@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema({
     gender: { type: String, default: 'Not Selected' },
     dob: { type: String, default: 'Not Selected' },
     password: { type: String, required: true },
+    googleId: { type: String, default: null },
     plan: { type: String, enum: ['free', 'premium'], default: 'free' },
     planExpiry: { type: Date, default: null },
     otp: { type: String, default: null },

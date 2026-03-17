@@ -3,6 +3,7 @@ import { AppContext } from '../context/AppContext'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 import { useNavigate, Link } from 'react-router-dom'
+import { GoogleLogin } from '@react-oauth/google'
 
 const OtpInput = ({ value, onChange }) => {
   const inputs = useRef([])
@@ -154,6 +155,23 @@ const Login = () => {
       toast.error('Failed to resend. Please try again.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const { data } = await axios.post(backendUrl + '/api/user/google-auth', {
+        credential: credentialResponse.credential,
+      })
+      if (data.success) {
+        localStorage.setItem('token', data.token)
+        setToken(data.token)
+        toast.success('Signed in with Google!')
+      } else {
+        toast.error(data.message)
+      }
+    } catch {
+      toast.error('Google sign-in failed. Please try again.')
     }
   }
 
@@ -331,6 +349,27 @@ const Login = () => {
                 </span>
               </p>
             )}
+          </div>
+
+          {/* ── Divider ── */}
+          <div className='flex items-center gap-3 my-5'>
+            <hr className='flex-1 border-gray-200' />
+            <span className='text-xs text-gray-400 font-medium'>OR</span>
+            <hr className='flex-1 border-gray-200' />
+          </div>
+
+          {/* Google Sign-In */}
+          <div className='flex justify-center'>
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => toast.error('Google sign-in failed. Please try again.')}
+              useOneTap={false}
+              text={state === 'Sign Up' ? 'signup_with' : 'signin_with'}
+              shape='rectangular'
+              theme='outline'
+              size='large'
+              width='320'
+            />
           </div>
         </div>
       </form>

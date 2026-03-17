@@ -33,8 +33,13 @@ const createPaymentIntent = async (req, res) => {
             slots_booked[slotDate].push(slotTime);
         }
 
-        // Create appointment first
+        // Video consultations get a discounted fee + higher admin commission
         const isVideo = consultationType === 'video';
+        const discountPercent = isVideo ? Number(process.env.VIDEO_DISCOUNT_PERCENT || 20) : 0;
+        const commissionRate  = isVideo ? Number(process.env.VIDEO_COMMISSION_RATE  || 20) : 10;
+        const finalAmount     = Math.round(docData.fees * (1 - discountPercent / 100) * 100) / 100;
+
+        // Create appointment first
         const appointmentData = {
             userId,
             docId,
@@ -51,11 +56,12 @@ const createPaymentIntent = async (req, res) => {
                 fees: docData.fees,
                 address: docData.address,
             },
-            amount: docData.fees,
+            amount: finalAmount,
             slotTime,
             slotDate,
             date: Date.now(),
             payment: false,
+            commissionRate,
             consultationType: isVideo ? 'video' : 'in-person',
             videoRoomId: isVideo ? `video-${randomUUID()}` : null,
         };
@@ -68,22 +74,27 @@ const createPaymentIntent = async (req, res) => {
 
         // Create Stripe payment intent
         const paymentIntent = await stripe.paymentIntents.create({
-            amount: Math.round(docData.fees * 100), // Stripe expects amount in cents
-            currency: 'usd',
+            amount: Math.round(finalAmount * 100), // Stripe expects amount in paise/cents
+            currency: 'inr',
             metadata: {
                 appointmentId: newAppointment._id.toString(),
                 userId: userId,
                 docId: docId,
                 doctorName: docData.name,
                 patientName: userData.name,
+                consultationType: consultationType || 'in-person',
+                discountPercent: String(discountPercent),
             },
-            description: `Appointment with Dr. ${docData.name} on ${slotDate} at ${slotTime}`,
+            description: `${isVideo ? 'Video' : 'In-Person'} appointment with Dr. ${docData.name} on ${slotDate} at ${slotTime}${isVideo ? ` (${discountPercent}% video discount applied)` : ''}`,
         });
 
         res.json({
             success: true,
             clientSecret: paymentIntent.client_secret,
             appointmentId: newAppointment._id,
+            originalFee: docData.fees,
+            finalAmount,
+            discountPercent,
             message: 'Payment intent created successfully'
         });
 

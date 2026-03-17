@@ -226,17 +226,21 @@ const bookAppointment = async (req, res) => {
         const userData = await userModel.findById(userId).select("-password");
         delete docData.slots_booked;
         const isVideo = consultationType === 'video';
+        const discountPercent = isVideo ? Number(process.env.VIDEO_DISCOUNT_PERCENT || 20) : 0;
+        const commissionRate  = isVideo ? Number(process.env.VIDEO_COMMISSION_RATE  || 20) : 10;
+        const finalAmount     = Math.round(docData.fees * (1 - discountPercent / 100) * 100) / 100;
         const appointmentData = {
             userId,
             docId,
             userData,
             docData,
-            amount: docData.fees,
+            amount: finalAmount,
             slotTime,
             slotDate,
             date: Date.now(),
             paymentMode: paymentMode || 'cash',
             payment: false,
+            commissionRate,
             consultationType: isVideo ? 'video' : 'in-person',
             videoRoomId: isVideo ? `video-${crypto.randomUUID()}` : null,
         };
