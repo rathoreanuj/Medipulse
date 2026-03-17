@@ -139,7 +139,7 @@ const Contact = () => {
 
           {/* Contact Form */}
           <div className='md:col-span-2'>
-            <div className='bg-gray-50 border border-gray-200 rounded-lg p-8'>
+            <div className='bg-gray-50 border border-gray-200 rounded-lg p-5 sm:p-8'>
               <h2 className='text-xl font-semibold text-gray-900 mb-6'>Send us a message</h2>
               
               <form onSubmit={handleSubmit} className='space-y-5'>
@@ -238,7 +238,7 @@ const Contact = () => {
         {/* Map Section */}
         <div className='mt-12'>
           <h3 className='text-lg font-semibold text-gray-900 mb-4'>Location</h3>
-          <div className='border border-gray-200 rounded-lg overflow-hidden h-96'>
+          <div className='border border-gray-200 rounded-lg overflow-hidden h-48 sm:h-64 md:h-96'>
             <iframe
               src='https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1841374373857!2d-73.98784368459418!3d40.74844097932847!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c259a9b3117469%3A0xd134e199a405a163!2sEmpire%20State%20Building!5e0!3m2!1sen!2sus!4v1234567890123!5m2!1sen!2sus'
               width='100%'

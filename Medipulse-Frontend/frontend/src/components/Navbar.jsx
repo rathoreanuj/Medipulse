@@ -220,7 +220,9 @@ const Navbar = () => {
   const [showMenu, setShowMenu] = useState(false)
   const [avatarError, setAvatarError] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
+  const [showUserDropdown, setShowUserDropdown] = useState(false)
   const notifRef = useRef(null)
+  const userDropdownRef = useRef(null)
   const {
     token,
     setToken,
@@ -254,6 +256,18 @@ const Navbar = () => {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [showNotifications])
+
+  // Close user dropdown when clicking outside
+  useEffect(() => {
+    if (!showUserDropdown) return
+    const handleClickOutside = (e) => {
+      if (userDropdownRef.current && !userDropdownRef.current.contains(e.target)) {
+        setShowUserDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showUserDropdown])
 
   const logout = () => {
     localStorage.removeItem('token')
@@ -341,7 +355,7 @@ const Navbar = () => {
                   )}
                 </div>
 
-                <div className='flex items-center gap-2 cursor-pointer group relative'>
+                <div ref={userDropdownRef} className='flex items-center gap-2 cursor-pointer relative' onClick={() => setShowUserDropdown(prev => !prev)}>
                   {(() => {
                     const isPremium = userData?.plan === 'premium' && userData?.planExpiry && new Date(userData.planExpiry) > new Date()
                     const ringClass = isPremium ? 'ring-2 ring-yellow-400 ring-offset-1' : ''
@@ -359,17 +373,19 @@ const Navbar = () => {
                     )
                   })()}
                   <img className='w-2.5' src={assets.dropdown_icon} alt="" />
-                  <div className='absolute top-0 right-0 pt-14 text-base font-medium text-gray-600 z-20 hidden group-hover:block'>
-                    <div className='min-w-48 bg-gray-50 rounded flex flex-col gap-4 p-4'>
-                      <p onClick={() => navigate('/my-profile')} className='hover:text-black cursor-pointer'>My Profile</p>
-                      <p onClick={() => navigate('/my-dashboard')} className='hover:text-black cursor-pointer'>My Dashboard</p>
-                      <p onClick={() => navigate('/my-appointments')} className='hover:text-black cursor-pointer'>My Appointments</p>
-                      <p onClick={() => navigate('/premium-plan')} className='hover:text-black cursor-pointer'>
-                        Premium Plan
-                      </p>
-                      <p onClick={logout} className='hover:text-black cursor-pointer'>Logout</p>
+                  {showUserDropdown && (
+                    <div className='absolute top-0 right-0 pt-14 text-base font-medium text-gray-600 z-20'>
+                      <div className='min-w-48 bg-gray-50 rounded flex flex-col gap-4 p-4 shadow-lg border border-gray-200'>
+                        <p onClick={() => { navigate('/my-profile'); setShowUserDropdown(false) }} className='hover:text-black cursor-pointer'>My Profile</p>
+                        <p onClick={() => { navigate('/my-dashboard'); setShowUserDropdown(false) }} className='hover:text-black cursor-pointer'>My Dashboard</p>
+                        <p onClick={() => { navigate('/my-appointments'); setShowUserDropdown(false) }} className='hover:text-black cursor-pointer'>My Appointments</p>
+                        <p onClick={() => { navigate('/premium-plan'); setShowUserDropdown(false) }} className='hover:text-black cursor-pointer'>
+                          Premium Plan
+                        </p>
+                        <p onClick={logout} className='hover:text-black cursor-pointer'>Logout</p>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </>
             )
@@ -387,6 +403,17 @@ const Navbar = () => {
             <NavLink onClick={() => setShowMenu(false)} to='/doctors' ><p className='px-4 py-2 rounded full inline-block'>ALL DOCTORS</p></NavLink>
             <NavLink onClick={() => setShowMenu(false)} to='/about' ><p className='px-4 py-2 rounded full inline-block'>ABOUT</p></NavLink>
             <NavLink onClick={() => setShowMenu(false)} to='/contact' ><p className='px-4 py-2 rounded full inline-block'>CONTACT</p></NavLink>
+            {token && userData ? (
+              <>
+                <NavLink onClick={() => setShowMenu(false)} to='/my-profile'><p className='px-4 py-2 rounded full inline-block'>MY PROFILE</p></NavLink>
+                <NavLink onClick={() => setShowMenu(false)} to='/my-dashboard'><p className='px-4 py-2 rounded full inline-block'>MY DASHBOARD</p></NavLink>
+                <NavLink onClick={() => setShowMenu(false)} to='/my-appointments'><p className='px-4 py-2 rounded full inline-block'>MY APPOINTMENTS</p></NavLink>
+                <NavLink onClick={() => setShowMenu(false)} to='/premium-plan'><p className='px-4 py-2 rounded full inline-block'>PREMIUM PLAN</p></NavLink>
+                <p onClick={() => { logout(); setShowMenu(false) }} className='px-4 py-2 cursor-pointer text-red-500'>LOGOUT</p>
+              </>
+            ) : (
+              <NavLink onClick={() => setShowMenu(false)} to='/login'><p className='px-4 py-2 bg-primary text-white rounded-full mt-2 inline-block'>Create Account</p></NavLink>
+            )}
           </ul>
         </div>
       </div>

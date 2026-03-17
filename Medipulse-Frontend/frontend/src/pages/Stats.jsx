@@ -58,7 +58,7 @@ export default function Stats() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="bg-white rounded-2xl shadow-md p-8 md:p-12"
+            className="bg-white rounded-2xl shadow-md p-5 sm:p-8 md:p-12"
           >
             <h2 className="text-xl md:text-2xl font-semibold text-gray-900 text-center mb-10">
               Trust the Numbers

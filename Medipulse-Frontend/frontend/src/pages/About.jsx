@@ -14,7 +14,7 @@ const About = () => {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className='grid md:grid-cols-2 gap-1 items-center'
+          className='grid md:grid-cols-2 gap-8 items-center'
         >
           {/* Left Side - Image */}
           <div className='relative'>
@@ -120,7 +120,7 @@ const About = () => {
             Why Choose Us
           </motion.h2>
           
-          <div className='grid md:grid-cols-3 gap-8'>
+          <div className='grid sm:grid-cols-2 md:grid-cols-3 gap-8'>
             
             {/* Efficiency Card */}
             <motion.div

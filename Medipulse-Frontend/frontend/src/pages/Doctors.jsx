@@ -157,7 +157,7 @@ const Doctors = () => {
                 {displayDoc.map((item, index) => (
                   <div 
                     onClick={() => { navigate(`/appointment/${item._id}`); scrollTo(0, 0) }} 
-                    className='bg-white border-2 border-gray-200 rounded-xl overflow-hidden cursor-pointer hover:shadow-lg hover:border-primary transition-all duration-300 group max-w-xs' 
+                    className='bg-white border-2 border-gray-200 rounded-xl overflow-hidden cursor-pointer hover:shadow-lg hover:border-primary transition-all duration-300 group' 
                     key={index}
                   >
                     {/* Doctor Image */}
