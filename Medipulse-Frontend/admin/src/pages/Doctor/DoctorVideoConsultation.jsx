@@ -10,7 +10,45 @@ const ICE_SERVERS = {
   iceServers: [
     { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' },
+    { urls: 'stun:stun2.l.google.com:19302' },
+    { urls: 'stun:stun3.l.google.com:19302' },
   ],
+}
+
+const MEDIA_CONSTRAINTS = {
+  video: {
+    width:      { ideal: 1280, min: 640 },
+    height:     { ideal: 720,  min: 480 },
+    frameRate:  { ideal: 30,   min: 15  },
+    facingMode: 'user',
+  },
+  audio: {
+    echoCancellation: true,
+    noiseSuppression: true,
+    autoGainControl:  true,
+  },
+}
+
+const applyHighQualityEncoding = async (pc) => {
+  const senders = pc.getSenders()
+  for (const sender of senders) {
+    if (sender.track?.kind !== 'video') continue
+    try {
+      const params = sender.getParameters()
+      if (!params.encodings || params.encodings.length === 0) {
+        params.encodings = [{}]
+      }
+      params.encodings.forEach(enc => {
+        enc.maxBitrate      = 2_500_000
+        enc.maxFramerate    = 30
+        enc.networkPriority = 'high'
+        enc.priority        = 'high'
+      })
+      await sender.setParameters(params)
+    } catch {
+      // fail silently if browser doesn't support
+    }
+  }
 }
 
 const DoctorVideoConsultation = () => {
@@ -92,6 +130,7 @@ const DoctorVideoConsultation = () => {
     }
     const offer = await pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true })
     await pc.setLocalDescription(offer)
+    await applyHighQualityEncoding(pc)
     socketRef.current.emit('video-offer', { videoRoomId: roomId, sdp: pc.localDescription })
   }, [createPeerConnection])
 
@@ -109,6 +148,7 @@ const DoctorVideoConsultation = () => {
     pendingCandidatesRef.current = []
     const answer = await pc.createAnswer()
     await pc.setLocalDescription(answer)
+    await applyHighQualityEncoding(pc)
     socketRef.current.emit('video-answer', { videoRoomId: roomId, sdp: pc.localDescription })
     setStatus('in-call')
     startTimer()
@@ -138,11 +178,15 @@ const DoctorVideoConsultation = () => {
 
         let stream
         try {
-          stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+          stream = await navigator.mediaDevices.getUserMedia(MEDIA_CONSTRAINTS)
         } catch {
-          setErrorMsg('Camera / microphone access denied. Please allow permissions and try again.')
-          setStatus('error')
-          return
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+          } catch {
+            setErrorMsg('Camera / microphone access denied. Please allow permissions and try again.')
+            setStatus('error')
+            return
+          }
         }
         if (cancelled) { stream.getTracks().forEach(t => t.stop()); return }
 
