@@ -3,6 +3,7 @@ import { loginUser, registerUser, verifyOtp, forgotPassword, resetPassword, getP
      from '../controllers/userController.js';
 import { googleAuth } from '../controllers/googleAuthController.js';
 import { checkSymptoms } from '../controllers/symptomController.js';
+import { smartSearch } from '../controllers/smartSearchController.js';
 import upload from '../middleware/multer.js';
 import authUser from '../middleware/authUser.js';
 import { authLimiter } from '../middleware/rateLimiter.js';
@@ -28,5 +29,8 @@ userRouter.get("/doctor-reviews/:docId", getDoctorReviews)
 
 // AI Symptom Checker
 userRouter.post("/symptom-check", authUser, checkSymptoms)
+
+// Smart Natural Language Search (public — no auth required)
+userRouter.post("/smart-search", smartSearch)
 
 export default userRouter;
