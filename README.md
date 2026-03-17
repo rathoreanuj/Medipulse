@@ -1,330 +1,391 @@
-# 🏥 Medipulse - Doctor Appointment Booking System
+# Medipulse - Full-Stack Doctor Appointment Platform
 
-<div align="center">
-  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
-  <img src="https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js" />
-  <img src="https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
-  <img src="https://img.shields.io/badge/Express.js-404D59?style=for-the-badge" alt="Express.js" />
-  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
-</div>
+Medipulse is a production-style healthcare appointment system with three apps:
 
-<div align="center">
-  <h3>🚀 A modern, full-stack Doctor appointment booking platform</h3>
-  <p>Streamlining healthcare access with intuitive appointment scheduling and management</p>
-</div>
+1. Patient Web App (React + Vite)
+2. Admin and Doctor Dashboard (React + Vite)
+3. Backend API and Realtime Server (Node.js + Express + Socket.IO)
 
+It supports appointment booking, online payments, OTP login, Google auth, realtime chat, realtime notifications, WebRTC video consultations, AI-based symptom triage, AI consultation summaries, subscriptions, and revenue analytics.
 
-<div align="center">
+## Live Deployments
 
-### 🔗 **Live Demo**
+- Patient App: https://medipulse-frontend.onrender.com/
+- Admin/Doctor App: https://medipulse-admin.onrender.com/
+- Backend API: https://medipulse-backend.onrender.com/
 
-| Application | URL | Description |
-|-------------|-----|-------------|
-| 🏥 **Patient Portal** | [https://medipulse-frontend.onrender.com/](https://medipulse-frontend.onrender.com/) | Book appointments, manage profile, view medical history |
-| ⚙️ **Admin & Doctor Portal** | [https://medipulse-admin.onrender.com/](https://medipulse-admin.onrender.com/) | Admin & Doctor dashboard for system management |
-| 🔧 **Backend API** | [https://medipulse-backend.onrender.com/](https://medipulse-backend.onrender.com/) | RESTful API powering the application |
+## What Is Implemented
 
-</div>
+### Patient Features
 
----
+- Email/password registration and login
+- OTP-based login verification (2-step login)
+- Google sign-in
+- Forgot password and reset password flow (email link)
+- Doctor listing with speciality filtering
+- Smart natural-language doctor search
+- AI symptom checker with urgency guidance and speciality recommendation
+- In-person and video consultation booking
+- Slot reservation flow to reduce double-booking race conditions
+- Cash and online payment modes
+- Stripe payment for appointments
+- Appointment list, cancellation, and re-payment for unpaid appointments
+- Doctor review and rating submission for completed appointments
+- Realtime chat with doctor for appointment-specific conversations
+- Realtime notifications (chat, reminders, system events)
+- WebRTC video consultation
+- Premium patient plan purchase and status tracking
+- Profile management with image upload
 
-## 🌟 Features
+### Doctor Features
 
-### 👤 **User Features**
-- ✅ **User Registration & Authentication** - Secure JWT-based authentication
-- ✅ **Doctor Discovery** - Browse doctors by specialty, location, and availability
-- ✅ **Appointment Booking** - Easy-to-use booking interface with calendar integration
-- ✅ **Appointment Management** - View, reschedule, and cancel appointments
-- ✅ **Profile Management** - Update personal information and medical history
-- ✅ **Responsive Design** - Seamless experience across all devices
+- Secure doctor login
+- Doctor dashboard with earnings, patient count, and appointment stats
+- View and manage appointments
+- Cancel and complete appointments
+- Availability toggle
+- Profile update (fees, address, availability)
+- Realtime chat with patient
+- Realtime notifications
+- WebRTC video consultation
+- AI consultation summary generation from notes
+- Email delivery of consultation summary to patient
+- Doctor subscription plans:
+  - Pro plan
+  - Featured listing plan
 
-### 👨‍⚕️ **Doctor Features**
-- ✅ **Doctor Dashboard** - Comprehensive overview of appointments and schedule
-- ✅ **Appointment Management** - Accept, decline, and manage patient appointments
-- ✅ **Schedule Management** - Set availability and working hours
-- ✅ **Patient Information** - Access patient details and medical history
+### Admin Features
 
-### 👨‍💼 **Admin Features**
-- ✅ **Admin Dashboard** - Complete system overview and analytics
-- ✅ **Doctor Management** - Add, edit, and manage doctor profiles
-- ✅ **User Management** - Monitor and manage user accounts
-- ✅ **Appointment Oversight** - View and manage all appointments
-- ✅ **System Analytics** - Track usage statistics and performance metrics
+- Admin authentication
+- Dashboard with doctor/user/appointment counts
+- Add and delete doctors
+- View all doctors and appointments
+- Change doctor availability
+- Cancel appointments
+- Public stats endpoint for landing/about section
+- Revenue analytics endpoint (appointments + subscriptions)
+- Realtime admin notifications
+- Utility endpoint to fix completed appointments with unpaid flags
 
----
+### Backend/Platform Features
 
-## 🛠️ Tech Stack
+- REST API architecture with role-based middleware (user, doctor, admin)
+- MongoDB models for users, doctors, appointments, reviews, chat, notifications
+- Cloudinary image upload support
+- Stripe payment intents and verification
+- Global, auth, and payment rate limiters
+- Socket.IO messaging for:
+  - Chat rooms
+  - Notification rooms
+  - Video signaling
+- Reminder scheduler (runs every minute):
+  - Video appointment reminders around 1 hour before
+  - In-person reminders around 4 hours before
+  - In-app notifications + reminder emails
+- Email service templates for:
+  - OTP
+  - Password reset
+  - Appointment reminders
+  - Consultation summaries
+- AI fallback strategy for symptom checker and consultation summary generation when model output fails
 
-### **Frontend**
-- **Framework:** React.js 18+ with Vite
-- **Styling:** Tailwind CSS
-- **State Management:** Context API
-- **Routing:** React Router DOM
-- **HTTP Client:** Axios
-- **Notifications:** React Toastify
-- **Icons:** Lucide React
+## Project Structure
 
-### **Backend**
-- **Runtime:** Node.js
-- **Framework:** Express.js
-- **Database:** MongoDB with Mongoose ODM
-- **Authentication:** JWT (JSON Web Tokens)
-- **File Upload:** Multer
-- **Image Storage:** Cloudinary
-- **Security:** bcrypt for password hashing
-- **Validation:** Validator.js
-- **Payment Gateway:** Stripe
+```text
+Medipulse/
+|- Medipulse-Backend/
+|  |- backend/
+|  |  |- config/
+|  |  |- controllers/
+|  |  |- middleware/
+|  |  |- models/
+|  |  |- routes/
+|  |  |- services/
+|  |  |- server.js
+|  |  |- package.json
+|
+|- Medipulse-Frontend/
+|  |- frontend/   (Patient app)
+|  |  |- src/
+|  |  |- package.json
+|  |
+|  |- admin/      (Admin + Doctor app)
+|     |- src/
+|     |- package.json
+```
 
-### **Development Tools**
-- **Version Control:** Git & GitHub
-- **Package Manager:** npm
-- **Linting:** ESLint
-- **Code Formatting:** Prettier
+## Tech Stack
 
----
+### Frontend
 
-## ⚡ Quick Start
+- React 18 + Vite
+- React Router
+- Context API
+- Axios
+- Tailwind CSS
+- React Toastify
+- Framer Motion
+- Stripe React SDK
+- Socket.IO Client
+
+### Backend
+
+- Node.js + Express
+- MongoDB + Mongoose
+- JWT authentication
+- bcrypt password hashing
+- Cloudinary uploads
+- Stripe payments
+- Socket.IO realtime layer
+- Nodemailer email delivery
+- OpenAI SDK (symptom triage + consultation summaries)
+- express-rate-limit
+
+## Authentication and Security
+
+- JWT auth for user and doctor accounts
+- Admin token validation using environment credentials
+- OTP verification step on user login
+- Password hashing with bcrypt
+- Brute-force-resistant auth limiter
+- Payment-specific rate limiter
+- Global API throttle
+- CORS allowlist with localhost development support
+
+## Booking and Payment Flow
+
+1. Patient selects doctor, date/time, consultation type, and payment mode.
+2. Backend reserves slot with an atomic reservation strategy.
+3. If payment mode is cash: booking is confirmed directly.
+4. If payment mode is online: frontend creates Stripe payment intent.
+5. On verification success, appointment is marked paid and booked.
+6. Commission values are recorded on appointment confirmation.
+
+## Video Consultation Flow
+
+1. User/doctor requests room join from `/api/video/join-room`.
+2. Backend validates appointment ownership and consultation type.
+3. WebRTC signaling occurs over Socket.IO (`join-video-room`, `video-offer`, `video-answer`, `ice-candidate`).
+4. Doctor can generate AI consultation summary at call end.
+5. Summary is saved to appointment and emailed to patient.
+
+## Environment Variables
+
+Create `.env` in `Medipulse-Backend/backend`.
+
+```env
+# Core
+PORT=4000
+NODE_ENV=development
+MONGODB_URI=mongodb://localhost:27017
+JWT_SECRET=your_jwt_secret
+
+# Admin login
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=your_admin_password
+
+# Cloudinary
+CLOUDINARY_NAME=your_cloudinary_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_SECRET_KEY=your_cloudinary_secret
+
+# Email (Gmail app password recommended)
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASS=your_email_app_password
+
+# Frontend base URL (for reset links and email CTA)
+FRONTEND_URL=http://localhost:5173
+
+# Stripe
+STRIPE_SECRET_KEY=your_stripe_secret_key
+
+# Google OAuth
+GOOGLE_CLIENT_ID=your_google_client_id
+
+# OpenAI
+OPENAI_API_KEY=your_openai_api_key
+
+# Optional tuning
+VIDEO_DISCOUNT_PERCENT=20
+VIDEO_COMMISSION_RATE=20
+GLOBAL_RATE_LIMIT_MAX=2000
+```
+
+Create `.env` in `Medipulse-Frontend/frontend`.
+
+```env
+VITE_BACKEND_URL=http://localhost:4000
+```
+
+Create `.env` in `Medipulse-Frontend/admin`.
+
+```env
+VITE_BACKEND_URL=http://localhost:4000
+```
+
+## Local Setup
+
+### 1. Clone
 
 ```bash
-# Clone the repository
 git clone https://github.com/rathoreanuj/Medipulse.git
 cd Medipulse
+```
 
-# Install backend dependencies
+### 2. Install dependencies
+
+```bash
 cd Medipulse-Backend/backend
 npm install
 
-# Install frontend dependencies
 cd ../../Medipulse-Frontend/frontend
 npm install
 
-# Install admin dependencies
 cd ../admin
 npm install
-
-# Set up environment variables (see Environment Variables section)
-
-# Start the backend server
-cd ../../Medipulse-Backend/backend
-npm start
-
-# Start the frontend (in a new terminal)
-cd ../../Medipulse-Frontend/frontend
-npm run dev
-
-# Start the admin panel (in a new terminal)
-cd ../admin
-npm run dev
 ```
 
----
+### 3. Run in development
 
-## 🔧 Installation
-
-### Prerequisites
-- **Node.js** (v16 or higher)
-- **MongoDB** (local installation or MongoDB Atlas)
-- **Git**
-
-### Step-by-Step Installation
-
-1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/rathoreanuj/Medipulse.git
-   cd Medipulse
-   ```
-
-2. **Backend Setup**
-   ```bash
-   cd Medipulse-Backend/backend
-   npm install
-   ```
-
-3. **Frontend Setup**
-   ```bash
-   cd ../../Medipulse-Frontend/frontend
-   npm install
-   ```
-
-4. **Admin Panel Setup**
-   ```bash
-   cd ../admin
-   npm install
-   ```
-
----
-
-## 🌐 Environment Variables
-
-### Backend (.env)
-Create a `.env` file in `Medipulse-Backend/backend/`:
-
-```env
-# Database
-MONGODB_URI=mongodb://localhost:27017/medipulse
-# or for MongoDB Atlas:
-# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/medipulse
-
-# JWT Secret
-JWT_SECRET=your_super_secret_jwt_key_here
-
-# Cloudinary Configuration
-CLOUDINARY_NAME=your_cloudinary_name
-CLOUDINARY_API_KEY=your_cloudinary_api_key
-CLOUDINARY_API_SECRET=your_cloudinary_api_secret
-
-# Server Configuration
-PORT=4000
-NODE_ENV=development
-
-# Admin Credentials
-ADMIN_EMAIL=xyz@.com
-ADMIN_PASSWORD=******
-```
-
-### Frontend (.env)
-Create a `.env` file in `Medipulse-Frontend/frontend/`:
-
-```env
-VITE_BACKEND_URL=http://localhost:4000
-```
-
-### Admin (.env)
-Create a `.env` file in `Medipulse-Frontend/admin/`:
-
-```env
-VITE_BACKEND_URL=http://localhost:4000
-```
-
----
-
-## 🚀 Running the Application
-
-### Development Mode
-
-1. **Start Backend Server**
-   ```bash
-   cd Medipulse-Backend/backend
-   npm run dev
-   # Server runs on http://localhost:4000
-   ```
-
-2. **Start Frontend Application**
-   ```bash
-   cd Medipulse-Frontend/frontend
-   npm run dev
-   # Frontend runs on http://localhost:5173
-   ```
-
-3. **Start Admin Panel**
-   ```bash
-   cd Medipulse-Frontend/admin
-   npm run dev
-   # Admin panel runs on http://localhost:5174
-   ```
-
-### Production Mode
+Backend:
 
 ```bash
-# Build frontend
+cd Medipulse-Backend/backend
+npm run server
+```
+
+Patient app:
+
+```bash
 cd Medipulse-Frontend/frontend
-npm run build
-
-# Build admin
-cd ../admin
-npm run build
-
-# Start backend in production
-cd ../../Medipulse-Backend/backend
-npm start
+npm run dev
 ```
 
-## 🎯 API Endpoints
+Admin/Doctor app:
 
-### Authentication
-```
-POST /api/user/register     # User registration
-POST /api/user/login        # User login
-POST /api/admin/login       # Admin login
-POST /api/doctor/login      # Doctor login
+```bash
+cd Medipulse-Frontend/admin
+npm run dev
 ```
 
-### User Endpoints
-```
-GET  /api/user/profile      # Get user profile
-POST /api/user/update       # Update user profile
-GET  /api/user/doctors      # Get all doctors
-POST /api/user/book-appointment    # Book appointment
-GET  /api/user/appointments        # Get user appointments
-POST /api/user/cancel-appointment  # Cancel appointment
-```
+## API Overview
 
-### Admin Endpoints
-```
-GET  /api/admin/dashboard   # Admin dashboard data
-POST /api/admin/add-doctor  # Add new doctor
-GET  /api/admin/doctors     # Get all doctors
-POST /api/admin/change-availability  # Update doctor availability
-```
+Base URL: `/api`
 
-### Doctor Endpoints
-```
-GET  /api/doctor/profile    # Get doctor profile
-POST /api/doctor/update     # Update doctor profile
-GET  /api/doctor/appointments      # Get doctor appointments
-POST /api/doctor/complete-appointment  # Mark appointment complete
-```
+### User
 
----
+- `POST /user/register`
+- `POST /user/login`
+- `POST /user/verify-otp`
+- `POST /user/forgot-password`
+- `POST /user/reset-password`
+- `POST /user/google-auth`
+- `GET /user/get-profile`
+- `POST /user/update-profile`
+- `POST /user/book-appointment`
+- `GET /user/appointments`
+- `POST /user/cancel-appointment`
+- `POST /user/review`
+- `GET /user/reviewed-appointments`
+- `GET /user/doctor-reviews/:docId`
+- `POST /user/symptom-check`
+- `POST /user/smart-search`
 
-## 👥 User Roles
+### Doctor
 
-### 🏥 **Patient/User**
-- Browse and search doctors
-- Book appointments
-- Manage personal appointments
-- Update profile information
+- `POST /doctor/login`
+- `GET /doctor/list`
+- `GET /doctor/appointments`
+- `POST /doctor/cancel-appointment`
+- `POST /doctor/change-availability`
+- `POST /doctor/complete-appointment`
+- `GET /doctor/dashboard`
+- `GET /doctor/profile`
+- `POST /doctor/update-profile`
 
-### 👨‍⚕️ **Doctor**
-- Manage appointment schedule
-- View patient information
-- Update availability
-- Complete appointments
+### Admin
 
-### 👨‍💼 **Admin**
-- System oversight and management
-- Doctor profile management
-- User account monitoring
-- System analytics and reporting
+- `POST /admin/login`
+- `POST /admin/add-doctor`
+- `GET /admin/all-doctors`
+- `POST /admin/delete-doctor`
+- `POST /admin/change-availability`
+- `GET /admin/appointments`
+- `POST /admin/cancel-appointment`
+- `GET /admin/dashboard`
+- `POST /admin/fix-completed-appointments`
+- `GET /admin/public-stats`
 
----
+### Payments and Plans
 
-## 🔐 Authentication
+- `POST /payment/create-payment-intent`
+- `POST /payment/verify-payment`
+- `POST /payment/pay-appointment`
+- `POST /subscription/doctor/plan-status`
+- `POST /subscription/doctor/create-payment`
+- `POST /subscription/patient/plan-status`
+- `POST /subscription/patient/create-payment`
+- `POST /subscription/verify-payment`
+- `GET /subscription/admin/revenue-stats`
 
-The application uses **JWT (JSON Web Tokens)** for authentication:
+### Chat, Notification, Video, Contact
 
-- **Secure Registration:** Password hashing with bcrypt
-- **Token-based Authentication:** Stateless authentication system
-- **Role-based Access Control:** Different access levels for users, doctors, and admins
-- **Protected Routes:** Middleware protection for sensitive endpoints
+- `GET /chat/messages/:appointmentId`
+- `GET /chat/doctor/messages/:appointmentId`
+- `GET /notification/user`
+- `POST /notification/user/mark-read`
+- `POST /notification/user/mark-all-read`
+- `GET /notification/doctor`
+- `POST /notification/doctor/mark-read`
+- `POST /notification/doctor/mark-all-read`
+- `GET /notification/admin`
+- `POST /notification/admin/mark-read`
+- `POST /notification/admin/mark-all-read`
+- `POST /video/join-room`
+- `POST /video/generate-summary`
+- `POST /contact/send`
 
----
+## Socket.IO Events
 
-## 📞 Contact
+### Client -> Server
 
-**Developer:** Anuj Rathore  
-**Email:** anujrathore385@gmail.com  
-**GitHub:** [@rathoreanuj](https://github.com/rathoreanuj)  
-**Project Link:** [https://github.com/rathoreanuj/Medipulse](https://github.com/rathoreanuj/Medipulse)
+- `join-notification-room`
+- `join-room`
+- `send-message`
+- `join-video-room`
+- `video-offer`
+- `video-answer`
+- `ice-candidate`
+- `end-call`
 
----
+### Server -> Client
 
-<div align="center">
-  <p>Made with ❤️ by Anuj Rathore</p>
-  <p>⭐ Star this repository if you found it helpful!</p>
-</div>
+- `joined-notification-room`
+- `chat-notification`
+- `notification-created`
+- `joined`
+- `new-message`
+- `video-joined`
+- `video-peer-joined`
+- `video-offer`
+- `video-answer`
+- `ice-candidate`
+- `call-ended`
+- `peer-disconnected`
+- `video-error`
 
+## Deployment Notes
 
-## 🐛 Known Issues
+- The backend includes a keep-alive ping for Render free-tier cold-start mitigation.
+- CORS and Socket.IO origin checks support deployed apps and localhost development.
+- Set all environment variables in your deployment platform before release.
 
-- None currently reported
+## Maintainer
+
+- Developer: Anuj Rathore
+- GitHub: https://github.com/rathoreanuj
+- Email: anujrathore385@gmail.com
+
+## License
+
+Both backend and frontend apps include MIT-style license files in their respective folders.
