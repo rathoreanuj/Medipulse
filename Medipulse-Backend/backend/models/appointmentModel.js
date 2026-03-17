@@ -20,6 +20,9 @@ const appointmentSchema = new mongoose.Schema({
     commission: { type: Number, default: 0 },
     consultationType: { type: String, enum: ['in-person', 'video'], default: 'in-person' },
     videoRoomId: { type: String, default: null },
+    // reservation/booking status
+    status: { type: String, enum: ['reserved', 'booked', 'cancelled'], default: 'booked' },
+    reservedAt: { type: Number, default: null },
 })
 
 // Index for fetching appointments by user (My Appointments page)
@@ -28,6 +31,8 @@ appointmentSchema.index({ userId: 1 })
 appointmentSchema.index({ docId: 1 })
 // Index for sorting appointments by date (newest first)
 appointmentSchema.index({ date: -1 })
+// Prevent double-booking for the same doctor slot when status is 'booked'
+appointmentSchema.index({ docId: 1, slotDate: 1, slotTime: 1 }, { unique: true, partialFilterExpression: { status: 'booked' } })
 
 const appointmentModel = mongoose.models.appointment || mongoose.model("appointment", appointmentSchema)
 export default appointmentModel

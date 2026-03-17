@@ -2,6 +2,7 @@ import express from 'express';
 import { loginUser, registerUser, verifyOtp, forgotPassword, resetPassword, getProfile, updateProfile, bookAppointment, listAppointment, cancelAppointment, submitReview, getDoctorReviews, getUserReviewedAppointments } 
      from '../controllers/userController.js';
 import { googleAuth } from '../controllers/googleAuthController.js';
+import { checkSymptoms } from '../controllers/symptomController.js';
 import upload from '../middleware/multer.js';
 import authUser from '../middleware/authUser.js';
 import { authLimiter } from '../middleware/rateLimiter.js';
@@ -24,5 +25,8 @@ userRouter.post("/cancel-appointment", authUser, cancelAppointment)
 userRouter.post("/review", authUser, submitReview)
 userRouter.get("/reviewed-appointments", authUser, getUserReviewedAppointments)
 userRouter.get("/doctor-reviews/:docId", getDoctorReviews)
+
+// AI Symptom Checker
+userRouter.post("/symptom-check", authUser, checkSymptoms)
 
 export default userRouter;

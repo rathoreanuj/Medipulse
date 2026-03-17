@@ -10,92 +10,46 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 // Create Stripe payment intent for appointment
 const createPaymentIntent = async (req, res) => {
     try {
-        const { userId, docId, slotDate, slotTime, consultationType } = req.body;
+        const { appointmentId } = req.body;
 
-        // Get doctor and user data
-        const docData = await doctorModel.findById(docId).select("-password");
-        const userData = await userModel.findById(userId).select("-password");
+        if (!appointmentId) return res.json({ success: false, message: 'appointmentId is required. Reserve slot first via /api/user/book-appointment' });
 
-        if (!docData.available) {
-            return res.json({ success: false, message: 'Doctor Not Available' });
-        }
+        // Load reservation
+        const appointment = await appointmentModel.findById(appointmentId);
+        if (!appointment) return res.json({ success: false, message: 'Reservation not found' });
+        if (appointment.status === 'booked') return res.json({ success: false, message: 'Appointment already booked' });
+        if (appointment.status === 'cancelled') return res.json({ success: false, message: 'Appointment cancelled' });
 
-        // Check if slot is available
-        let slots_booked = docData.slots_booked;
-        if (slots_booked[slotDate]) {
-            if (slots_booked[slotDate].includes(slotTime)) {
-                return res.json({ success: false, message: 'Slot Not Available' });
-            } else {
-                slots_booked[slotDate].push(slotTime);
-            }
-        } else {
-            slots_booked[slotDate] = [];
-            slots_booked[slotDate].push(slotTime);
-        }
+        const docData = appointment.docData;
+        const userData = appointment.userData;
 
-        // Video consultations get a discounted fee + higher admin commission
-        const isVideo = consultationType === 'video';
-        const discountPercent = isVideo ? Number(process.env.VIDEO_DISCOUNT_PERCENT || 20) : 0;
-        const commissionRate  = isVideo ? Number(process.env.VIDEO_COMMISSION_RATE  || 20) : 10;
-        const finalAmount     = Math.round(docData.fees * (1 - discountPercent / 100) * 100) / 100;
+        // Ensure doctor is still available
+        const doctor = await doctorModel.findById(appointment.docId).select('-password');
+        if (!doctor || !doctor.available) return res.json({ success: false, message: 'Doctor Not Available' });
 
-        // Create appointment first
-        const appointmentData = {
-            userId,
-            docId,
-            userData,
-            docData: {
-                _id: docData._id,
-                name: docData.name,
-                email: docData.email,
-                image: docData.image,
-                speciality: docData.speciality,
-                degree: docData.degree,
-                experience: docData.experience,
-                about: docData.about,
-                fees: docData.fees,
-                address: docData.address,
-            },
-            amount: finalAmount,
-            slotTime,
-            slotDate,
-            date: Date.now(),
-            payment: false,
-            commissionRate,
-            consultationType: isVideo ? 'video' : 'in-person',
-            videoRoomId: isVideo ? `video-${randomUUID()}` : null,
-        };
-
-        const newAppointment = new appointmentModel(appointmentData);
-        await newAppointment.save();
-
-        // Update doctor's booked slots
-        await doctorModel.findByIdAndUpdate(docId, { slots_booked });
+        const finalAmount = Math.round((appointment.amount || 0) * 100) / 100;
 
         // Create Stripe payment intent (INR, minimum ₹50 per Stripe rules)
-        const chargeAmount = Math.max(Math.round(finalAmount), 50)
+        const chargeAmount = Math.max(Math.round(finalAmount), 50);
         const paymentIntent = await stripe.paymentIntents.create({
-            amount: chargeAmount * 100, // Stripe INR uses paise (1 INR = 100 paise)
+            amount: chargeAmount * 100, // Stripe INR uses paise
             currency: 'inr',
             metadata: {
-                appointmentId: newAppointment._id.toString(),
-                userId: userId,
-                docId: docId,
+                appointmentId: appointment._id.toString(),
+                userId: appointment.userId,
+                docId: appointment.docId,
                 doctorName: docData.name,
                 patientName: userData.name,
-                consultationType: consultationType || 'in-person',
-                discountPercent: String(discountPercent),
             },
-            description: `${isVideo ? 'Video' : 'In-Person'} appointment with Dr. ${docData.name} on ${slotDate} at ${slotTime}${isVideo ? ` (${discountPercent}% video discount applied)` : ''}`,
+            description: `Payment for appointment with Dr. ${docData.name} on ${appointment.slotDate} at ${appointment.slotTime}`,
         });
 
         res.json({
             success: true,
             clientSecret: paymentIntent.client_secret,
-            appointmentId: newAppointment._id,
+            appointmentId: appointment._id,
             originalFee: docData.fees,
             finalAmount: chargeAmount,
-            discountPercent,
             message: 'Payment intent created successfully'
         });
 
@@ -114,11 +68,23 @@ const verifyPayment = async (req, res) => {
         const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
         if (paymentIntent.status === 'succeeded') {
-            // Update appointment payment status
+            // Update appointment payment status and mark booked
             const appointment = await appointmentModel.findById(appointmentId);
             const commissionRate = appointment?.commissionRate ?? 10;
             const commission = Math.round(((appointment?.amount || 0) * commissionRate / 100) * 100) / 100;
-            await appointmentModel.findByIdAndUpdate(appointmentId, { payment: true, commission });
+
+            // Mark appointment as paid and booked
+            await appointmentModel.findByIdAndUpdate(appointmentId, { payment: true, commission, status: 'booked' });
+
+            // Add slot to doctor's slots_booked
+            const doctorData = await doctorModel.findById(appointment.docId);
+            let slots_booked = doctorData.slots_booked || {};
+            if (slots_booked[appointment.slotDate]) {
+                if (!slots_booked[appointment.slotDate].includes(appointment.slotTime)) slots_booked[appointment.slotDate].push(appointment.slotTime);
+            } else {
+                slots_booked[appointment.slotDate] = [appointment.slotTime];
+            }
+            await doctorModel.findByIdAndUpdate(appointment.docId, { slots_booked });
 
             res.json({
                 success: true,
@@ -129,15 +95,17 @@ const verifyPayment = async (req, res) => {
             const appointment = await appointmentModel.findById(appointmentId);
             
             if (appointment) {
-                await appointmentModel.findByIdAndUpdate(appointmentId, { cancelled: true });
+                await appointmentModel.findByIdAndUpdate(appointmentId, { cancelled: true, status: 'cancelled' });
 
-                // Free up the slot
+                // Free up the slot in doctor's record
                 const doctorData = await doctorModel.findById(appointment.docId);
-                let slots_booked = doctorData.slots_booked;
-                slots_booked[appointment.slotDate] = slots_booked[appointment.slotDate].filter(
-                    e => e !== appointment.slotTime
-                );
-                await doctorModel.findByIdAndUpdate(appointment.docId, { slots_booked });
+                let slots_booked = doctorData.slots_booked || {};
+                if (slots_booked[appointment.slotDate]) {
+                    slots_booked[appointment.slotDate] = slots_booked[appointment.slotDate].filter(
+                        e => e !== appointment.slotTime
+                    );
+                    await doctorModel.findByIdAndUpdate(appointment.docId, { slots_booked });
+                }
             }
 
             res.json({

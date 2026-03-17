@@ -212,51 +212,103 @@ const bookAppointment = async (req, res) => {
         if (!docData.available) {
             return res.json({ success: false, message: 'Doctor Not Available' });
         }
-        let slots_booked = docData.slots_booked;
-        if (slots_booked[slotDate]) {
-            if (slots_booked[slotDate].includes(slotTime)) {
-                return res.json({ success: false, message: 'Slot Not Available' });
-            } else {
-                slots_booked[slotDate].push(slotTime);
-            }
-        } else {
-            slots_booked[slotDate] = [];
-            slots_booked[slotDate].push(slotTime);
-        }
+        // Use atomic reservation to avoid race conditions
         const userData = await userModel.findById(userId).select("-password");
         delete docData.slots_booked;
         const isVideo = consultationType === 'video';
         const discountPercent = isVideo ? Number(process.env.VIDEO_DISCOUNT_PERCENT || 20) : 0;
         const commissionRate  = isVideo ? Number(process.env.VIDEO_COMMISSION_RATE  || 20) : 10;
         const finalAmount     = Math.round(docData.fees * (1 - discountPercent / 100) * 100) / 100;
-        const appointmentData = {
-            userId,
-            docId,
-            userData,
-            docData,
-            amount: finalAmount,
-            slotTime,
-            slotDate,
-            date: Date.now(),
-            paymentMode: paymentMode || 'cash',
-            payment: false,
-            commissionRate,
-            consultationType: isVideo ? 'video' : 'in-person',
-            videoRoomId: isVideo ? `video-${crypto.randomUUID()}` : null,
-        };
-        const newAppointment = new appointmentModel(appointmentData);
-        await newAppointment.save();
-        await doctorModel.findByIdAndUpdate(docId, { slots_booked });
 
-        await createNotification({
-            recipientType: 'user',
-            recipientId: userId,
-            type: 'appointment',
-            title: 'Appointment booked',
-            message: `Your appointment with ${docData.name} is confirmed for ${slotDate} at ${slotTime}.`,
-            link: '/my-appointments',
-            meta: { appointmentId: newAppointment._id }
-        });
+        // Attempt atomic reserve (creates a document if slot not already booked)
+        const reservation = await appointmentModel.findOneAndUpdate(
+            { docId, slotDate, slotTime, status: { $ne: 'booked' } },
+            { $setOnInsert: {
+                userId,
+                docId,
+                userData,
+                docData,
+                amount: finalAmount,
+                slotTime,
+                slotDate,
+                date: Date.now(),
+                paymentMode: paymentMode || 'cash',
+                payment: false,
+                commissionRate,
+                consultationType: isVideo ? 'video' : 'in-person',
+                videoRoomId: isVideo ? `video-${crypto.randomUUID()}` : null,
+                status: 'reserved',
+                reservedAt: Date.now()
+            } },
+            { upsert: true, new: true }
+        );
+
+        // If reservation exists and belongs to someone else and is already booked, reject
+        if (reservation.status === 'booked' && String(reservation.userId) !== String(userId)) {
+            return res.json({ success: false, message: 'Slot Not Available' });
+        }
+
+        // If reservation was created for someone else (upsert returned existing reserved doc), check owner
+        if (String(reservation.userId) !== String(userId) && reservation.status === 'reserved') {
+            // slot reserved by another user — not available
+            return res.json({ success: false, message: 'Slot Not Available' });
+        }
+
+        // At this point reservation is ours (either newly created or previously reserved by this user)
+        // If paymentMode is 'cash', immediately confirm booking (mark as booked)
+        if (!paymentMode || paymentMode === 'cash') {
+            const booked = await appointmentModel.findOneAndUpdate(
+                { _id: reservation._id, status: 'reserved' },
+                { $set: { status: 'booked', payment: false } },
+                { new: true }
+            );
+            if (!booked) return res.json({ success: false, message: 'Failed to confirm booking' });
+
+            // Add slot to doctor's slots_booked for UI consistency
+            const doctorData = await doctorModel.findById(docId);
+            let slots_booked = doctorData.slots_booked || {};
+            if (slots_booked[slotDate]) {
+                if (!slots_booked[slotDate].includes(slotTime)) slots_booked[slotDate].push(slotTime);
+            } else {
+                slots_booked[slotDate] = [slotTime];
+            }
+            await doctorModel.findByIdAndUpdate(docId, { slots_booked });
+
+            await createNotification({
+                recipientType: 'user',
+                recipientId: userId,
+                type: 'appointment',
+                title: 'Appointment booked',
+                message: `Your appointment with ${docData.name} is confirmed for ${slotDate} at ${slotTime}.`,
+                link: '/my-appointments',
+                meta: { appointmentId: booked._id }
+            });
+
+            await createNotification({
+                recipientType: 'doctor',
+                recipientId: docId,
+                type: 'appointment',
+                title: 'New appointment booked',
+                message: `${userData.name} booked ${slotDate} at ${slotTime}.`,
+                link: '/doctor-appointments',
+                meta: { appointmentId: booked._id }
+            });
+
+            await createNotification({
+                recipientType: 'admin',
+                recipientId: 'global',
+                type: 'appointment',
+                title: 'New appointment created',
+                message: `${userData.name} booked with ${docData.name}.`,
+                link: '/all-appointments',
+                meta: { appointmentId: booked._id }
+            });
+
+            return res.json({ success: true, message: 'Appointment Booked', appointmentId: booked._id });
+        }
+
+        // For online payment, return reservation id so frontend can create payment intent
+        res.json({ success: true, message: 'Slot Reserved', appointmentId: reservation._id, amount: finalAmount });
 
         await createNotification({
             recipientType: 'doctor',
