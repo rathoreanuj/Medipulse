@@ -54,16 +54,7 @@ const appointmentCancel = async (req, res) => {
         if (appointmentData && appointmentData.docId === docId) {
             await appointmentModel.findByIdAndUpdate(appointmentId, { cancelled: true })
 
-            await createNotification({
-                recipientType: 'doctor',
-                recipientId: docId,
-                type: 'appointment',
-                title: 'Appointment cancelled',
-                message: `You cancelled ${appointmentData.slotDate} at ${appointmentData.slotTime}.`,
-                link: '/doctor-appointments',
-                meta: { appointmentId }
-            })
-
+            // Notify the patient that the doctor cancelled
             await createNotification({
                 recipientType: 'user',
                 recipientId: appointmentData.userId,
@@ -71,16 +62,6 @@ const appointmentCancel = async (req, res) => {
                 title: 'Appointment cancelled by doctor',
                 message: `${appointmentData.docData?.name || 'Doctor'} cancelled your appointment on ${appointmentData.slotDate} at ${appointmentData.slotTime}.`,
                 link: '/my-appointments',
-                meta: { appointmentId }
-            })
-
-            await createNotification({
-                recipientType: 'admin',
-                recipientId: 'global',
-                type: 'appointment',
-                title: 'Doctor cancelled appointment',
-                message: `${appointmentData.docData?.name || 'Doctor'} cancelled an appointment.`,
-                link: '/all-appointments',
                 meta: { appointmentId }
             })
 
@@ -137,36 +118,6 @@ const appointmentComplete = async (req, res) => {
             });
             console.log('=== END DEBUG ===');
 
-            await createNotification({
-                recipientType: 'doctor',
-                recipientId: docId,
-                type: 'appointment',
-                title: 'Appointment marked completed',
-                message: `You marked ${appointmentData.slotDate} at ${appointmentData.slotTime} as completed.`,
-                link: '/doctor-appointments',
-                meta: { appointmentId }
-            })
-
-            await createNotification({
-                recipientType: 'user',
-                recipientId: appointmentData.userId,
-                type: 'appointment',
-                title: 'Appointment completed',
-                message: `${appointmentData.docData?.name || 'Doctor'} marked your appointment as completed.`,
-                link: '/my-appointments',
-                meta: { appointmentId }
-            })
-
-            await createNotification({
-                recipientType: 'admin',
-                recipientId: 'global',
-                type: 'appointment',
-                title: 'Appointment completed',
-                message: `${appointmentData.docData?.name || 'Doctor'} completed an appointment.`,
-                link: '/all-appointments',
-                meta: { appointmentId }
-            })
-            
             return res.json({ success: true, message: 'Appointment Completed' })
         }
 

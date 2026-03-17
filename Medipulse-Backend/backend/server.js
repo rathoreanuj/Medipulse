@@ -22,6 +22,7 @@ import chatModel from "./models/chatModel.js"
 import userModel from "./models/userModel.js"
 import doctorModel from "./models/doctorModel.js"
 import { createNotification, setNotificationSocketServer } from "./services/notificationService.js"
+import { sendAppointmentReminderEmail } from "./services/emailService.js"
 
 const app = express()
 const port = process.env.PORT || 4000
@@ -397,7 +398,7 @@ io.on("connection", (socket) => {
 
 const sendUpcomingAppointmentReminders = async () => {
   const now = Date.now()
-  const inOneHour = now + (60 * 60 * 1000)
+  const inFourHours = now + (4 * 60 * 60 * 1000)
 
   const candidates = await appointmentModel.find({
     cancelled: false,
@@ -405,7 +406,6 @@ const sendUpcomingAppointmentReminders = async () => {
     $or: [
       { reminderSentUser: { $ne: true } },
       { reminderSentDoctor: { $ne: true } },
-      { reminderSentAdmin: { $ne: true } }
     ]
   }).limit(200)
 
@@ -414,24 +414,49 @@ const sendUpcomingAppointmentReminders = async () => {
     if (!appointmentAt) continue
 
     const appointmentTime = appointmentAt.getTime()
-    if (appointmentTime <= now || appointmentTime > inOneHour) continue
+    const isVideo = appt.consultationType === 'video'
 
-    const doctorName = appt.docData?.name || 'Doctor'
+    // Video: remind 1 hour before. Clinic: remind 4 hours before.
+    const reminderWindow = isVideo ? (60 * 60 * 1000) : (4 * 60 * 60 * 1000)
+    const reminderFrom   = now
+    const reminderUntil  = now + reminderWindow
+
+    // Only send if appointment is within the reminder window (and in the future)
+    if (appointmentTime <= now || appointmentTime > reminderUntil) continue
+
+    const doctorName  = appt.docData?.name  || 'Doctor'
     const patientName = appt.userData?.name || 'Patient'
-    const reminderText = `Upcoming appointment at ${appt.slotTime} with ${doctorName}.`
-
-    const updateData = {}
+    const typeLabel   = isVideo ? 'Video' : 'Clinic'
+    const updateData  = {}
 
     if (!appt.reminderSentUser) {
       await createSystemNotification({
         recipientType: 'user',
         recipientId: appt.userId,
         type: 'reminder',
-        title: 'Appointment reminder (1 hour)',
-        message: reminderText,
+        title: `${typeLabel} appointment reminder`,
+        message: `Your ${typeLabel.toLowerCase()} appointment with ${doctorName} is at ${appt.slotTime} today.`,
         link: '/my-appointments',
         meta: { appointmentId: appt._id }
       })
+
+      // Also send email reminder to patient
+      const patient = await userModel.findById(appt.userId).select('email name').lean()
+      if (patient?.email) {
+        try {
+          await sendAppointmentReminderEmail(
+            patient.email,
+            patient.name || patientName,
+            doctorName,
+            appt.slotDate,
+            appt.slotTime,
+            appt.consultationType || (isVideo ? 'video' : 'clinic')
+          )
+        } catch (emailErr) {
+          console.log('Reminder email failed:', emailErr.message)
+        }
+      }
+
       updateData.reminderSentUser = true
     }
 
@@ -440,25 +465,12 @@ const sendUpcomingAppointmentReminders = async () => {
         recipientType: 'doctor',
         recipientId: appt.docId,
         type: 'reminder',
-        title: 'Appointment reminder (1 hour)',
-        message: `Upcoming appointment with ${patientName} at ${appt.slotTime}.`,
+        title: `${typeLabel} appointment reminder`,
+        message: `${typeLabel} appointment with ${patientName} at ${appt.slotTime} today.`,
         link: '/doctor-appointments',
         meta: { appointmentId: appt._id }
       })
       updateData.reminderSentDoctor = true
-    }
-
-    if (!appt.reminderSentAdmin) {
-      await createSystemNotification({
-        recipientType: 'admin',
-        recipientId: 'global',
-        type: 'reminder',
-        title: 'Appointment due in 1 hour',
-        message: `${patientName} with ${doctorName} at ${appt.slotTime}.`,
-        link: '/all-appointments',
-        meta: { appointmentId: appt._id }
-      })
-      updateData.reminderSentAdmin = true
     }
 
     if (Object.keys(updateData).length > 0) {

@@ -203,15 +203,12 @@ const PremiumPlanInner = () => {
               onClick={initiatePayment}
               className='w-full py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 transition-colors text-base'
             >
-              Upgrade to Premium — $3.59
+              Upgrade to Premium — ₹299
             </button>
           ) : (
-            <button
-              onClick={initiatePayment}
-              className='w-full py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 transition-colors text-base'
-            >
-              Renew Premium Plan
-            </button>
+            <div className='w-full py-3 bg-green-50 border border-green-200 text-green-700 rounded-xl font-semibold text-center text-base'>
+              ✓ Plan Active — Expires {planExpiry}
+            </div>
           )}
         </div>
       </div>
@@ -226,7 +223,7 @@ const PremiumPlanInner = () => {
         <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
           <div className='bg-white rounded-2xl shadow-xl p-6 w-full max-w-md'>
             <h3 className='text-lg font-bold text-gray-800 mb-1'>Complete Payment</h3>
-            <p className='text-sm text-gray-500 mb-4'>Patient Premium Plan — 1 Month ($3.59)</p>
+            <p className='text-sm text-gray-500 mb-4'>Patient Premium Plan — 1 Month (₹299)</p>
             <Elements stripe={stripePromise} options={{ clientSecret }}>
               <PaymentForm
                 clientSecret={clientSecret}

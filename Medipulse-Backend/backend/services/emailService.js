@@ -205,4 +205,86 @@ const sendConsultationSummaryEmail = async (toEmail, patientName, doctorName, su
   await transporter.sendMail(mailOptions);
 };
 
-export { sendOtpEmail, sendPasswordResetEmail, sendConsultationSummaryEmail };
+/**
+ * Sends an appointment reminder email to the patient.
+ * @param {string} toEmail
+ * @param {string} patientName
+ * @param {string} doctorName
+ * @param {string} slotDate
+ * @param {string} slotTime
+ * @param {'video'|'clinic'} consultationType
+ */
+const sendAppointmentReminderEmail = async (toEmail, patientName, doctorName, slotDate, slotTime, consultationType) => {
+  const isVideo = consultationType === 'video'
+  const typeLabel  = isVideo ? 'Video Consultation' : 'Clinic Appointment'
+  const timeNote   = isVideo ? 'in about 1 hour' : 'in about 4 hours'
+  const actionText = isVideo
+    ? 'Please ensure you have a stable internet connection and are in a quiet place.'
+    : 'Please arrive 10 minutes early at the clinic.'
+  const iconEmoji  = isVideo ? '💻' : '🏥'
+
+  const mailOptions = {
+    from: `"Medipulse" <${process.env.EMAIL_USER}>`,
+    to: toEmail,
+    subject: `⏰ Reminder: Your ${typeLabel} with Dr. ${doctorName} — ${slotDate} at ${slotTime}`,
+    html: `
+      <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:560px;margin:0 auto;background:#f8fafc;border-radius:12px;overflow:hidden;">
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg,#5f6FFF 0%,#3b5bdb 100%);padding:32px 40px;text-align:center;">
+          <h1 style="color:white;margin:0;font-size:24px;font-weight:700;letter-spacing:-0.5px;">🏥 Medipulse</h1>
+          <p style="color:rgba(255,255,255,0.85);margin:6px 0 0;font-size:14px;">Healthcare at your fingertips</p>
+        </div>
+
+        <!-- Body -->
+        <div style="background:white;padding:36px 40px;">
+          <h2 style="color:#1e293b;margin:0 0 6px;font-size:20px;font-weight:600;">
+            ${iconEmoji} Appointment Reminder
+          </h2>
+          <p style="color:#64748b;margin:0 0 24px;font-size:15px;line-height:1.6;">
+            Hi <strong>${patientName}</strong>, this is a friendly reminder that your upcoming appointment is <strong>${timeNote}</strong>.
+          </p>
+
+          <!-- Appointment Card -->
+          <div style="background:#f1f5ff;border-left:4px solid #5f6FFF;border-radius:8px;padding:20px 24px;margin-bottom:24px;">
+            <table style="width:100%;border-collapse:collapse;">
+              <tr>
+                <td style="color:#64748b;font-size:13px;padding:5px 0;width:110px;">Type</td>
+                <td style="color:#1e293b;font-size:14px;font-weight:600;padding:5px 0;">${typeLabel}</td>
+              </tr>
+              <tr>
+                <td style="color:#64748b;font-size:13px;padding:5px 0;">Doctor</td>
+                <td style="color:#1e293b;font-size:14px;font-weight:600;padding:5px 0;">Dr. ${doctorName}</td>
+              </tr>
+              <tr>
+                <td style="color:#64748b;font-size:13px;padding:5px 0;">Date</td>
+                <td style="color:#1e293b;font-size:14px;font-weight:600;padding:5px 0;">${slotDate}</td>
+              </tr>
+              <tr>
+                <td style="color:#64748b;font-size:13px;padding:5px 0;">Time</td>
+                <td style="color:#1e293b;font-size:14px;font-weight:600;padding:5px 0;">${slotTime}</td>
+              </tr>
+            </table>
+          </div>
+
+          <p style="color:#475569;font-size:14px;line-height:1.7;margin:0 0 24px;">
+            ${actionText}
+          </p>
+
+          <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/my-appointments"
+             style="display:inline-block;background:#5f6FFF;color:white;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;font-size:14px;">
+            View Appointment
+          </a>
+        </div>
+
+        <!-- Footer -->
+        <div style="background:#f8fafc;padding:20px 40px;border-top:1px solid #e2e8f0;text-align:center;">
+          <p style="color:#94a3b8;font-size:12px;margin:0;">© ${new Date().getFullYear()} Medipulse. All rights reserved.</p>
+        </div>
+      </div>
+    `,
+  }
+
+  await transporter.sendMail(mailOptions)
+}
+
+export { sendOtpEmail, sendPasswordResetEmail, sendConsultationSummaryEmail, sendAppointmentReminderEmail };

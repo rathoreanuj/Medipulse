@@ -36,7 +36,21 @@ const googleAuth = async (req, res) => {
         // Find existing user or create a new one (no password required for OAuth users)
         let user = await userModel.findOne({ email });
 
-        if (!user) {
+        if (user) {
+            // If this user registered with email/password (not Google), reject the request
+            if (!user.googleId && user.password && !user.password.startsWith('google_oauth_')) {
+                return res.json({
+                    success: false,
+                    message: 'An account with this email already exists. Please log in with your email and password.'
+                });
+            }
+            // Existing Google user — update googleId if missing
+            if (!user.googleId) {
+                user.googleId = googleId;
+                if (!user.image && picture) user.image = picture;
+                await user.save();
+            }
+        } else {
             // New user — register via Google
             user = await userModel.create({
                 name,
@@ -45,11 +59,6 @@ const googleAuth = async (req, res) => {
                 image: picture || '',
                 googleId,
             });
-        } else if (!user.googleId) {
-            // Existing email user links their Google account
-            user.googleId = googleId;
-            if (!user.image && picture) user.image = picture;
-            await user.save();
         }
 
         // Issue full MediPulse JWT
