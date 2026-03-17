@@ -23,6 +23,9 @@ const appointmentSchema = new mongoose.Schema({
     // reservation/booking status
     status: { type: String, enum: ['reserved', 'booked', 'cancelled'], default: 'booked' },
     reservedAt: { type: Number, default: null },
+    // AI consultation summary
+    consultationSummary: { type: Object, default: null },
+    summaryGeneratedAt: { type: Number, default: null },
 })
 
 // Index for fetching appointments by user (My Appointments page)

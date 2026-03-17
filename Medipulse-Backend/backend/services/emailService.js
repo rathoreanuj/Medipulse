@@ -121,4 +121,88 @@ const sendPasswordResetEmail = async (toEmail, resetLink, userName = 'there') =>
   await transporter.sendMail(mailOptions);
 };
 
-export { sendOtpEmail, sendPasswordResetEmail };
+
+/**
+ * Sends a post-consultation AI-generated summary email to the patient.
+ */
+const sendConsultationSummaryEmail = async (toEmail, patientName, doctorName, summary) => {
+  const { chiefComplaint, assessment, recommendations, medications, followUp, disclaimer } = summary;
+
+  const listItems = (arr) =>
+    arr && arr.length
+      ? arr.map(i => `<li style="margin-bottom:6px;color:#374151;">${i}</li>`).join('')
+      : '<li style="color:#9ca3af;">None noted</li>';
+
+  const mailOptions = {
+    from: `"Medipulse" <${process.env.EMAIL_USER}>`,
+    to: toEmail,
+    subject: `Your Consultation Summary with Dr. ${doctorName} — Medipulse`,
+    html: `
+      <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;background:#f8fafc;border-radius:12px;overflow:hidden;">
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg,#5f6FFF 0%,#3b5bdb 100%);padding:32px 40px;text-align:center;">
+          <h1 style="color:white;margin:0;font-size:24px;font-weight:700;letter-spacing:-0.5px;">🏥 Medipulse</h1>
+          <p style="color:rgba(255,255,255,0.85);margin:6px 0 0;font-size:14px;">Your AI-generated Consultation Summary</p>
+        </div>
+
+        <!-- Intro -->
+        <div style="background:white;padding:32px 40px 0;">
+          <p style="color:#374151;font-size:15px;line-height:1.7;margin:0 0 6px;">Hi <strong>${patientName}</strong>,</p>
+          <p style="color:#6b7280;font-size:14px;line-height:1.7;margin:0 0 24px;">
+            Here is your consultation summary generated after your video appointment with <strong>Dr. ${doctorName}</strong> on <strong>${new Date().toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' })}</strong>.
+          </p>
+        </div>
+
+        <!-- Summary Sections -->
+        <div style="background:white;padding:0 40px 32px;">
+
+          <!-- Chief Complaint -->
+          <div style="background:#f0f9ff;border-left:4px solid #3b82f6;border-radius:0 8px 8px 0;padding:16px 20px;margin-bottom:16px;">
+            <p style="margin:0 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#3b82f6;font-weight:700;">Chief Complaint</p>
+            <p style="margin:0;color:#1e40af;font-size:14px;line-height:1.6;">${chiefComplaint || 'Not specified'}</p>
+          </div>
+
+          <!-- Assessment -->
+          <div style="background:#fefce8;border-left:4px solid #eab308;border-radius:0 8px 8px 0;padding:16px 20px;margin-bottom:16px;">
+            <p style="margin:0 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#ca8a04;font-weight:700;">Assessment</p>
+            <p style="margin:0;color:#713f12;font-size:14px;line-height:1.6;">${assessment || 'Not specified'}</p>
+          </div>
+
+          <!-- Recommendations -->
+          <div style="background:#f0fdf4;border-left:4px solid #22c55e;border-radius:0 8px 8px 0;padding:16px 20px;margin-bottom:16px;">
+            <p style="margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#16a34a;font-weight:700;">Recommendations</p>
+            <ul style="margin:0;padding-left:20px;">${listItems(recommendations)}</ul>
+          </div>
+
+          <!-- Medications -->
+          <div style="background:#fdf4ff;border-left:4px solid #a855f7;border-radius:0 8px 8px 0;padding:16px 20px;margin-bottom:16px;">
+            <p style="margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#9333ea;font-weight:700;">Medications / Advice</p>
+            <ul style="margin:0;padding-left:20px;">${listItems(medications)}</ul>
+          </div>
+
+          <!-- Follow-up -->
+          <div style="background:#fff7ed;border-left:4px solid #f97316;border-radius:0 8px 8px 0;padding:16px 20px;margin-bottom:24px;">
+            <p style="margin:0 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#ea580c;font-weight:700;">Follow-up</p>
+            <p style="margin:0;color:#9a3412;font-size:14px;line-height:1.6;">${followUp || 'As advised by your doctor'}</p>
+          </div>
+
+          <!-- Disclaimer -->
+          <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:14px 18px;">
+            <p style="margin:0;color:#9ca3af;font-size:12px;line-height:1.6;">
+              ⚠️ <strong>Disclaimer:</strong> ${disclaimer || 'This summary is AI-generated based on doctor notes and is for informational purposes only. It does not replace professional medical advice. Always follow your doctor\'s instructions.'}
+            </p>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="background:#f8fafc;padding:20px 40px;border-top:1px solid #e2e8f0;text-align:center;">
+          <p style="color:#94a3b8;font-size:12px;margin:0;">© ${new Date().getFullYear()} Medipulse. All rights reserved.</p>
+        </div>
+      </div>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+};
+
+export { sendOtpEmail, sendPasswordResetEmail, sendConsultationSummaryEmail };

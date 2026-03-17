@@ -115,25 +115,39 @@ const Appointment = () => {
 
         try {
             if (paymentMode === 'online') {
-                // Create payment intent for online payment
+                // Step 1: Reserve the slot atomically
+                const reserveRes = await axios.post(
+                    backendUrl + '/api/user/book-appointment',
+                    { docId, slotDate, slotTime, paymentMode: 'online', consultationType },
+                    { headers: { token } }
+                );
+
+                if (!reserveRes.data.success) {
+                    toast.error(reserveRes.data.message);
+                    return;
+                }
+
+                const reservedAppointmentId = reserveRes.data.appointmentId;
+
+                // Step 2: Create Stripe payment intent for that reservation
                 const { data } = await axios.post(
                     backendUrl + '/api/payment/create-payment-intent',
-                    { docId, slotDate, slotTime, consultationType },
+                    { appointmentId: reservedAppointmentId },
                     { headers: { token } }
                 );
 
                 if (data.success) {
                     setClientSecret(data.clientSecret);
-                    setAppointmentId(data.appointmentId);
+                    setAppointmentId(reservedAppointmentId);
                     setShowStripeCheckout(true);
                 } else {
                     toast.error(data.message);
                 }
             } else {
-                // Book appointment with offline payment
+                // Book appointment with cash/offline payment
                 const { data } = await axios.post(
                     backendUrl + '/api/user/book-appointment',
-                    { docId, slotDate, slotTime, paymentMode: 'offline', consultationType },
+                    { docId, slotDate, slotTime, paymentMode: 'cash', consultationType },
                     { headers: { token } }
                 );
 

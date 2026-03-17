@@ -309,28 +309,6 @@ const bookAppointment = async (req, res) => {
 
         // For online payment, return reservation id so frontend can create payment intent
         res.json({ success: true, message: 'Slot Reserved', appointmentId: reservation._id, amount: finalAmount });
-
-        await createNotification({
-            recipientType: 'doctor',
-            recipientId: docId,
-            type: 'appointment',
-            title: 'New appointment booked',
-            message: `${userData.name} booked ${slotDate} at ${slotTime}.`,
-            link: '/doctor-appointments',
-            meta: { appointmentId: newAppointment._id }
-        });
-
-        await createNotification({
-            recipientType: 'admin',
-            recipientId: 'global',
-            type: 'appointment',
-            title: 'New appointment created',
-            message: `${userData.name} booked with ${docData.name}.`,
-            link: '/all-appointments',
-            meta: { appointmentId: newAppointment._id }
-        });
-
-        res.json({ success: true, message: 'Appointment Booked', appointmentId: newAppointment._id });
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: error.message });

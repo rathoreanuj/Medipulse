@@ -51,6 +51,26 @@ const applyHighQualityEncoding = async (pc) => {
   }
 }
 
+const COLOR_MAP = {
+  blue:   'bg-blue-50 border-blue-200 text-blue-800',
+  yellow: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+  green:  'bg-green-50 border-green-200 text-green-800',
+  purple: 'bg-purple-50 border-purple-200 text-purple-800',
+  orange: 'bg-orange-50 border-orange-200 text-orange-800',
+}
+
+const SummarySection = ({ label, color, value, items }) => (
+  <div className={`rounded-lg border px-4 py-3 ${COLOR_MAP[color] || COLOR_MAP.blue}`}>
+    <p className='text-xs font-bold uppercase tracking-wide opacity-70 mb-1'>{label}</p>
+    {value && <p className='text-sm leading-relaxed'>{value}</p>}
+    {items && items.length > 0 && (
+      <ul className='list-disc list-inside space-y-0.5'>
+        {items.map((it, i) => <li key={i} className='text-sm'>{it}</li>)}
+      </ul>
+    )}
+  </div>
+)
+
 const DoctorVideoConsultation = () => {
   const { appointmentId } = useParams()
   const { backendUrl } = useContext(AppContext)
@@ -63,6 +83,13 @@ const DoctorVideoConsultation = () => {
   const [callDuration, setCallDuration] = useState(0)
   const [appointment, setAppointment] = useState(null)
   const [errorMsg, setErrorMsg] = useState('')
+
+  // Summary state
+  const [showSummaryModal, setShowSummaryModal] = useState(false)
+  const [summaryNotes, setSummaryNotes] = useState('')
+  const [summaryLoading, setSummaryLoading] = useState(false)
+  const [summaryResult, setSummaryResult] = useState(null)
+  const [summaryError, setSummaryError] = useState('')
 
   const localVideoRef = useRef(null)
   const remoteVideoRef = useRef(null)
@@ -271,6 +298,29 @@ const DoctorVideoConsultation = () => {
     cleanup()
   }
 
+  const handleGenerateSummary = async () => {
+    setSummaryLoading(true)
+    setSummaryError('')
+    setSummaryResult(null)
+    try {
+      const { data } = await axios.post(
+        `${backendUrl}/api/video/generate-summary`,
+        { appointmentId, notes: summaryNotes },
+        { headers: { dtoken: dToken } }
+      )
+      if (data.success) {
+        setSummaryResult(data)
+        toast.success('Summary emailed to patient!')
+      } else {
+        setSummaryError(data.message || 'Failed to generate summary')
+      }
+    } catch {
+      setSummaryError('Could not connect. Please try again.')
+    } finally {
+      setSummaryLoading(false)
+    }
+  }
+
   const formatDuration = (s) => {
     const m = Math.floor(s / 60).toString().padStart(2, '0')
     const sec = (s % 60).toString().padStart(2, '0')
@@ -299,18 +349,81 @@ const DoctorVideoConsultation = () => {
   if (status === 'ended') {
     return (
       <div className='fixed inset-0 z-50 flex items-center justify-center px-4 bg-gray-50'>
-        <div className='bg-white rounded-xl border border-gray-200 p-8 max-w-md w-full text-center'>
-          <div className='w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4'>
-            <svg className='w-8 h-8 text-green-500' fill='none' stroke='currentColor' strokeWidth='2' viewBox='0 0 24 24'>
-              <path strokeLinecap='round' strokeLinejoin='round' d='M5 13l4 4L19 7' />
-            </svg>
+        <div className='bg-white rounded-2xl border border-gray-200 shadow-xl p-8 max-w-lg w-full'>
+          {/* Header */}
+          <div className='text-center mb-6'>
+            <div className='w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4'>
+              <svg className='w-8 h-8 text-green-500' fill='none' stroke='currentColor' strokeWidth='2' viewBox='0 0 24 24'>
+                <path strokeLinecap='round' strokeLinejoin='round' d='M5 13l4 4L19 7' />
+              </svg>
+            </div>
+            <h2 className='text-xl font-bold text-gray-800'>Consultation Ended</h2>
+            <p className='text-gray-500 text-sm mt-1'>Duration: <span className='font-medium text-gray-700'>{formatDuration(callDuration)}</span></p>
           </div>
-          <h2 className='text-xl font-semibold text-gray-800 mb-2'>Consultation Ended</h2>
-          <p className='text-gray-500 text-sm mb-1'>Duration: {formatDuration(callDuration)}</p>
-          <p className='text-gray-400 text-xs mb-6'>The consultation has been completed successfully.</p>
-          <button onClick={() => navigate('/doctor-appointments')} className='bg-primary text-white px-6 py-2.5 rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium'>
-            Back to Appointments
-          </button>
+
+          {/* Summary Form or Result */}
+          {!summaryResult ? (
+            <>
+              <div className='bg-blue-50 border border-blue-100 rounded-xl p-4 mb-5'>
+                <div className='flex items-center gap-2 mb-2'>
+                  <svg className='w-5 h-5 text-blue-500 flex-shrink-0' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m1.636-6.364l.707.707M12 21v-1M12 8a4 4 0 100 8 4 4 0 000-8z' />
+                  </svg>
+                  <p className='text-sm font-semibold text-blue-800'>AI Consultation Summary</p>
+                </div>
+                <p className='text-xs text-blue-600 leading-relaxed'>Add brief notes about this consultation and AI will generate a structured summary — automatically emailed to the patient.</p>
+              </div>
+
+              <div className='mb-4'>
+                <label className='block text-sm font-semibold text-gray-700 mb-2'>Consultation Notes <span className='font-normal text-gray-400'>(optional)</span></label>
+                <textarea
+                  value={summaryNotes}
+                  onChange={e => setSummaryNotes(e.target.value)}
+                  placeholder='e.g. Patient complained of chest pain and breathlessness. Advised ECG and rest. Prescribed aspirin. Follow up in 1 week.'
+                  rows={4}
+                  className='w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none'
+                />
+              </div>
+
+              {summaryError && (
+                <div className='bg-red-50 border border-red-200 rounded-lg px-4 py-2.5 text-sm text-red-600 mb-4'>{summaryError}</div>
+              )}
+
+              <button
+                onClick={handleGenerateSummary}
+                disabled={summaryLoading}
+                className='w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-200 disabled:text-gray-400 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2 mb-3'
+              >
+                {summaryLoading ? (
+                  <><div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin' />Generating & Emailing Summary…</>
+                ) : (
+                  <><svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M13 10V3L4 14h7v7l9-11h-7z' /></svg>Generate Summary & Email Patient</>
+                )}
+              </button>
+
+              <button onClick={() => navigate('/doctor-appointments')} className='w-full text-sm text-gray-400 hover:text-gray-600 py-2 transition-colors'>
+                Skip & go to Appointments
+              </button>
+            </>
+          ) : (
+            // Summary preview after generation
+            <>
+              <div className='space-y-3 mb-6 max-h-64 overflow-y-auto pr-1'>
+                <SummarySection label='Chief Complaint' color='blue' value={summaryResult.summary?.chiefComplaint} />
+                <SummarySection label='Assessment' color='yellow' value={summaryResult.summary?.assessment} />
+                <SummarySection label='Recommendations' color='green' items={summaryResult.summary?.recommendations} />
+                <SummarySection label='Medications / Advice' color='purple' items={summaryResult.summary?.medications} />
+                <SummarySection label='Follow-up' color='orange' value={summaryResult.summary?.followUp} />
+              </div>
+              <div className='bg-green-50 border border-green-200 rounded-xl px-4 py-3 flex items-center gap-2 mb-5'>
+                <svg className='w-4 h-4 text-green-500 flex-shrink-0' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' /></svg>
+                <p className='text-sm text-green-700'>Summary emailed to patient successfully.</p>
+              </div>
+              <button onClick={() => navigate('/doctor-appointments')} className='w-full bg-primary text-white font-semibold py-3 rounded-xl hover:bg-blue-600 transition-colors'>
+                Back to Appointments
+              </button>
+            </>
+          )}
         </div>
       </div>
     )
