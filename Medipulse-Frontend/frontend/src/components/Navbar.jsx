@@ -210,30 +210,6 @@ const DoctorSearchBar = ({ doctors }) => {
     </div>
   )
 }
-                      )}
-                      {doc.fees && (
-                        <span className='text-[11px] text-gray-400'>· ₹{doc.fees}</span>
-                      )}
-                    </div>
-                  </div>
-                  <svg className='w-4 h-4 text-gray-300 flex-shrink-0' fill='none' stroke='currentColor' strokeWidth='2' viewBox='0 0 24 24'>
-                    <path strokeLinecap='round' strokeLinejoin='round' d='M9 5l7 7-7 7' />
-                  </svg>
-                </button>
-              ))}
-              <button
-                onMouseDown={() => { navigate('/doctors'); setOpen(false); setQuery('') }}
-                className='w-full px-3 py-2.5 text-sm text-primary font-medium border-t border-gray-100 hover:bg-blue-50 transition-colors text-left'
-              >
-                View all doctors →
-              </button>
-            </>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
 
 // ─── Navbar ───────────────────────────────────────────────────────────────────
 
