@@ -74,8 +74,8 @@ const createPaymentIntent = async (req, res) => {
 
         // Create Stripe payment intent
         const paymentIntent = await stripe.paymentIntents.create({
-            amount: Math.round(finalAmount * 100), // Stripe expects amount in paise/cents
-            currency: 'inr',
+            amount: Math.round(finalAmount * 100), // amount in smallest currency unit
+            currency: 'usd',
             metadata: {
                 appointmentId: newAppointment._id.toString(),
                 userId: userId,
