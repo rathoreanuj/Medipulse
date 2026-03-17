@@ -20,12 +20,13 @@ export default function WhyChooseMedipulse() {
             <div className='bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2'>
               <div className='bg-primary w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg'>
                 <svg className='w-8 h-8 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' />
+                  <rect x='3' y='5' width='18' height='11' rx='1.5' strokeWidth={2} strokeLinecap='round' strokeLinejoin='round' />
+                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M2 18h20' />
                 </svg>
               </div>
-              <h3 className='font-bold text-xl text-gray-800 mb-3 text-center'>24/7 Availability</h3>
+              <h3 className='font-bold text-xl text-gray-800 mb-3 text-center'>Online Video Consultations</h3>
               <p className='text-gray-600 text-center leading-relaxed'>
-                We&apos;re here for you round the clock with emergency services and online consultations.
+                Connect with certified doctors through secure video calls—book, pay online, and consult from the comfort of your home.
               </p>
             </div>
 
