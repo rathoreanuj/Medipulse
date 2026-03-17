@@ -111,9 +111,8 @@ const Contact = () => {
             <div className='bg-white border-2 border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow'>
               <h3 className='text-base font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200'>Office Address</h3>
               <p className='text-gray-700 text-sm leading-relaxed'>
-                54709 Willms Station<br />
-                Suite 350<br />
-                Washington, USA 98101
+                House No. 220, Vijay Nagar<br />
+                Indore, MP
               </p>
             </div>
 
@@ -121,7 +120,7 @@ const Contact = () => {
             <div className='bg-white border-2 border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow'>
               <h3 className='text-base font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200'>Contact</h3>
               <div className='text-gray-700 text-sm space-y-2'>
-                <p><span className='font-medium'>Phone:</span> <a href='tel:+14155550132' className='text-primary hover:underline'>+1 (415) 555-0132</a></p>
+                <p><span className='font-medium'>Phone:</span> <a href='tel:+919340041042' className='text-primary hover:underline'>+91 93400 41042</a></p>
                 <p><span className='font-medium'>Email:</span> <a href='mailto:anujrathore385@gmail.com' className='text-primary hover:underline break-all'>anujrathore385@gmail.com</a></p>
               </div>
             </div>
