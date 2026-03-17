@@ -132,7 +132,7 @@ const Doctors = () => {
                       alt={item.name} 
                     />
                     {item.isFeatured && item.featuredUntil && new Date(item.featuredUntil) > new Date() && (
-                      <span className='absolute top-2 left-2 bg-yellow-400 text-white text-xs font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 shadow'>
+                      <span className='absolute top-2 left-2 bg-primary text-white text-xs font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-md'>
                         ⭐ Featured
                       </span>
                     )}

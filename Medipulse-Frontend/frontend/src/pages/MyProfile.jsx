@@ -209,13 +209,13 @@ const MyProfile = () => {
                                 <div className='relative'>
                                     {image || (hasUsableAvatar && !profileImageError) ? (
                                         <img
-                                            className={`w-32 h-32 rounded-full object-cover shadow-lg group-hover:opacity-75 transition-opacity ${isPremiumActive ? 'border-4 border-yellow-400' : 'border-4 border-primary'}`}
+                                            className={`w-32 h-32 rounded-full object-cover shadow-lg group-hover:opacity-75 transition-opacity ${isPremiumActive ? '' : 'border-4 border-primary'}`}
                                             src={image ? URL.createObjectURL(image) : userData.image}
                                             alt="Profile"
                                             onError={() => setProfileImageError(true)}
                                         />
                                     ) : (
-                                        <div className={`w-32 h-32 rounded-full shadow-lg bg-blue-50 text-primary flex items-center justify-center text-4xl font-bold ${isPremiumActive ? 'border-4 border-yellow-400' : 'border-4 border-primary'}`}>
+                                        <div className={`w-32 h-32 rounded-full shadow-lg bg-blue-50 text-primary flex items-center justify-center text-4xl font-bold ${isPremiumActive ? '' : 'border-4 border-primary'}`}>
                                             {getInitial(userData.name)}
                                         </div>
                                     )}
@@ -234,13 +234,13 @@ const MyProfile = () => {
                         ) : (
                             hasUsableAvatar && !profileImageError ? (
                                 <img
-                                    className={`w-32 h-32 rounded-full object-cover shadow-lg ${isPremiumActive ? 'border-4 border-yellow-400' : 'border-4 border-primary'}`}
+                                    className={`w-32 h-32 rounded-full object-cover shadow-lg ${isPremiumActive ? '' : 'border-4 border-primary'}`}
                                     src={userData.image}
                                     alt="Profile"
                                     onError={() => setProfileImageError(true)}
                                 />
                             ) : (
-                                <div className={`w-32 h-32 rounded-full shadow-lg bg-blue-50 text-primary flex items-center justify-center text-4xl font-bold ${isPremiumActive ? 'border-4 border-yellow-400' : 'border-4 border-primary'}`}>
+                                <div className={`w-32 h-32 rounded-full shadow-lg bg-blue-50 text-primary flex items-center justify-center text-4xl font-bold ${isPremiumActive ? '' : 'border-4 border-primary'}`}>
                                     {getInitial(userData.name)}
                                 </div>
                             )
