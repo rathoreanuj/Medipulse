@@ -1,58 +1,32 @@
-import React, { useContext, useEffect, useState, useRef } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { AppContext } from '../context/AppContext'
-import { useNavigate, useParams } from 'react-router-dom'
-import axios from 'axios'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 
 const Doctors = () => {
 
   const { speciality } = useParams()
+  const location = useLocation()
 
   const [filterDoc, setFilterDoc] = useState([])
   const [showFilter, setShowFilter] = useState(false)
   const navigate = useNavigate();
 
-  const { doctors, backendUrl } = useContext(AppContext)
+  const { doctors } = useContext(AppContext)
 
-  // ─── Smart Search state ─────────────────────────────────────────────────
-  const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState(null)   // null = not searched yet
-  const [parsedFilters, setParsedFilters] = useState([])
-  const [searching, setSearching] = useState(false)
-  const searchInputRef = useRef(null)
+  // ─── Smart Search results passed via navigation state ───────────────────
+  const smartResults   = location.state?.smartResults   ?? null   // null = normal browse
+  const parsedFilters  = location.state?.parsedFilters  ?? []
+  const smartQuery     = location.state?.query          ?? ''
 
-  const handleSmartSearch = async (e) => {
-    e?.preventDefault()
-    if (!searchQuery.trim()) return
-    setSearching(true)
-    setSearchResults(null)
-    try {
-      const { data } = await axios.post(`${backendUrl}/api/user/smart-search`, { query: searchQuery.trim() })
-      if (data.success) {
-        setSearchResults(data.doctors)
-        setParsedFilters(data.parsedFilters || [])
-      }
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setSearching(false)
-    }
-  }
-
-  const clearSearch = () => {
-    setSearchQuery('')
-    setSearchResults(null)
-    setParsedFilters([])
-  }
+  const clearSmartSearch = () => navigate('/doctors', { replace: true, state: {} })
 
   const applyFilter = () => {
     let list = speciality ? doctors.filter(doc => doc.speciality === speciality) : [...doctors]
-    // Sort: featured first → then highest average rating → then by name
     list.sort((a, b) => {
       const aFeatured = a.isFeatured && a.featuredUntil && new Date(a.featuredUntil) > new Date()
       const bFeatured = b.isFeatured && b.featuredUntil && new Date(b.featuredUntil) > new Date()
       if (aFeatured && !bFeatured) return -1
       if (!aFeatured && bFeatured) return 1
-      // Both same featured status → sort by rating descending
       return (b.averageRating || 0) - (a.averageRating || 0)
     })
     setFilterDoc(list)
@@ -65,68 +39,27 @@ const Doctors = () => {
   return (
     <div className='max-w-7xl mx-auto px-4 py-8'>
 
-      {/* ─── Smart Search Bar ──────────────────────────────────────────────── */}
-      <div className='mb-6'>
-        <form onSubmit={handleSmartSearch} className='flex gap-2 items-center'>
-          <div className='relative flex-1'>
-            <svg className='absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-primary' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z' />
-            </svg>
-            <input
-              ref={searchInputRef}
-              type='text'
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder='Try: "affordable cardiologist in Delhi with good ratings"'
-              className='w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary transition-colors bg-white shadow-sm'
-            />
-            {searchQuery && (
-              <button type='button' onClick={clearSearch} className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600'>
-                <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
-                </svg>
-              </button>
-            )}
-          </div>
-          <button
-            type='submit'
-            disabled={searching || !searchQuery.trim()}
-            className='px-5 py-3 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary/90 disabled:opacity-60 transition-colors flex items-center gap-2 shadow-sm whitespace-nowrap'
-          >
-            {searching ? (
-              <span className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin' />
-            ) : (
-              <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M13 10V3L4 14h7v7l9-11h-7z' />
-              </svg>
-            )}
-            Smart Search
+      {/* Smart search result banner */}
+      {smartResults !== null && (
+        <div className='mb-5 flex flex-wrap items-center gap-2 bg-primary/5 border border-primary/20 rounded-xl px-4 py-3'>
+          <svg className='w-4 h-4 text-primary flex-shrink-0' fill='none' stroke='currentColor' strokeWidth='2' viewBox='0 0 24 24'>
+            <path strokeLinecap='round' strokeLinejoin='round' d='M13 10V3L4 14h7v7l9-11h-7z' />
+          </svg>
+          <span className='text-sm text-gray-600'>Smart Search: <span className='font-semibold text-gray-800'>&ldquo;{smartQuery}&rdquo;</span></span>
+          {parsedFilters.map((f, i) => (
+            <span key={i} className='bg-primary/10 text-primary text-xs font-semibold px-2.5 py-0.5 rounded-full'>✓ {f}</span>
+          ))}
+          <button onClick={clearSmartSearch} className='ml-auto text-xs text-gray-400 hover:text-red-500 underline transition-colors'>
+            Clear search
           </button>
-        </form>
-
-        {/* Parsed filter tags */}
-        {searchResults !== null && (
-          <div className='mt-3 flex flex-wrap items-center gap-2'>
-            <span className='text-xs text-gray-500 font-medium'>Detected:</span>
-            {parsedFilters.length > 0 ? parsedFilters.map((f, i) => (
-              <span key={i} className='inline-flex items-center gap-1 bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full'>
-                ✓ {f}
-              </span>
-            )) : (
-              <span className='text-xs text-gray-400 italic'>No specific filters detected — showing all available doctors</span>
-            )}
-            <button onClick={clearSearch} className='ml-auto text-xs text-gray-400 hover:text-gray-600 underline'>
-              Clear search
-            </button>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className='flex flex-col sm:flex-row items-start gap-6'>
         
         {/* Hide sidebar when smart search is active */}
-        {searchResults === null && (
+        {smartResults === null && (
         <>
         {/* Mobile Filter Toggle Button */}
         <button 
@@ -195,9 +128,9 @@ const Doctors = () => {
         <div className='flex-1'>
           {/* Results Count */}
           <div className='mb-4'>
-            {searchResults !== null ? (
+            {smartResults !== null ? (
               <p className='text-gray-600 text-sm'>
-                <span className='font-semibold text-primary'>{searchResults.length}</span> {searchResults.length === 1 ? 'doctor' : 'doctors'} matched your search
+                <span className='font-semibold text-primary'>{smartResults.length}</span> {smartResults.length === 1 ? 'doctor' : 'doctors'} matched your search
               </p>
             ) : (
               <p className='text-gray-600 text-sm'>
@@ -209,15 +142,15 @@ const Doctors = () => {
 
           {/* Doctors Cards */}
           {(() => {
-            const displayDoc = searchResults !== null ? searchResults : filterDoc
+            const displayDoc = smartResults !== null ? smartResults : filterDoc
             return displayDoc.length === 0 ? (
               <div className='text-center py-16 bg-gray-50 rounded-xl'>
                 <svg className='w-20 h-20 mx-auto text-gray-300 mb-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                   <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={1.5} d='M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' />
                 </svg>
                 <p className='text-gray-500 text-lg font-medium'>No doctors found</p>
-                <p className='text-gray-400 mt-2'>{searchResults !== null ? 'Try a different search query' : 'Try selecting a different specialty'}</p>
-                {searchResults !== null && <button onClick={clearSearch} className='mt-3 text-sm text-primary underline'>Clear search</button>}
+                <p className='text-gray-400 mt-2'>{smartResults !== null ? 'Try a different search query' : 'Try selecting a different specialty'}</p>
+                {smartResults !== null && <button onClick={clearSmartSearch} className='mt-3 text-sm text-primary underline'>Clear search</button>}
               </div>
             ) : (
               <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5'>
@@ -272,7 +205,7 @@ const Doctors = () => {
                       </div>
                       
                       {/* Fees — shown in smart search mode */}
-                      {searchResults !== null && (
+                      {smartResults !== null && (
                         <p className='text-xs text-primary font-semibold mb-2'>₹{item.fees} consultation fee</p>
                       )}
 
