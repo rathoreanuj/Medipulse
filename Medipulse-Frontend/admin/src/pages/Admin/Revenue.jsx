@@ -77,7 +77,7 @@ const Revenue = () => {
       <div className='grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6'>
         <StatCard
           title='Total Commission Earned'
-          value={`$${stats.totalCommission.toFixed(2)}`}
+          value={`₹${stats.totalCommission.toFixed(2)}`}
           subtitle={`From ${stats.paidAppointments} paid appointments`}
           color='bg-blue-50 text-blue-600'
           icon={
@@ -88,7 +88,7 @@ const Revenue = () => {
         />
         <StatCard
           title='Subscription Revenue'
-          value={`$${stats.totalSubscriptionRevenue.toFixed(2)}`}
+          value={`₹${stats.totalSubscriptionRevenue.toFixed(2)}`}
           subtitle='Active subscriptions this month'
           color='bg-emerald-50 text-emerald-600'
           icon={
@@ -99,7 +99,7 @@ const Revenue = () => {
         />
         <StatCard
           title='Gross Appointment Revenue'
-          value={`$${stats.totalRevenue.toFixed(2)}`}
+          value={`₹${stats.totalRevenue.toFixed(2)}`}
           subtitle='Total paid by patients'
           color='bg-purple-50 text-purple-600'
           icon={
@@ -110,7 +110,7 @@ const Revenue = () => {
         />
         <StatCard
           title='Total Platform Revenue'
-          value={`$${totalEstimatedRevenue.toFixed(2)}`}
+          value={`₹${totalEstimatedRevenue.toFixed(2)}`}
           subtitle='Commission + subscriptions'
           color='bg-orange-50 text-orange-600'
           icon={
@@ -126,31 +126,31 @@ const Revenue = () => {
         <div className='bg-white rounded-xl border border-gray-100 shadow-sm p-5'>
           <div className='flex items-center justify-between mb-3'>
             <h3 className='font-semibold text-gray-700'>Doctor Pro Plans</h3>
-            <span className='bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-1 rounded-full'>$11.99/mo</span>
+            <span className='bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-1 rounded-full'>₹999/mo</span>
           </div>
           <p className='text-3xl font-bold text-gray-800'>{stats.activeDoctorPro}</p>
           <p className='text-sm text-gray-400 mt-1'>Active subscribers</p>
-          <p className='text-sm text-emerald-600 font-medium mt-2'>≈ ${stats.doctorSubRevenue.toFixed(2)}/mo</p>
+          <p className='text-sm text-emerald-600 font-medium mt-2'>≈ ₹{stats.doctorSubRevenue.toFixed(2)}/mo</p>
         </div>
 
         <div className='bg-white rounded-xl border border-gray-100 shadow-sm p-5'>
           <div className='flex items-center justify-between mb-3'>
             <h3 className='font-semibold text-gray-700'>Featured Listings</h3>
-            <span className='bg-yellow-100 text-yellow-700 text-xs font-semibold px-2 py-1 rounded-full'>$5.99/wk</span>
+            <span className='bg-yellow-100 text-yellow-700 text-xs font-semibold px-2 py-1 rounded-full'>₹499/wk</span>
           </div>
           <p className='text-3xl font-bold text-gray-800'>{stats.activeFeatured}</p>
           <p className='text-sm text-gray-400 mt-1'>Active featured doctors</p>
-          <p className='text-sm text-emerald-600 font-medium mt-2'>≈ ${stats.featuredRevenue.toFixed(2)}/wk</p>
+          <p className='text-sm text-emerald-600 font-medium mt-2'>≈ ₹{stats.featuredRevenue.toFixed(2)}/wk</p>
         </div>
 
         <div className='bg-white rounded-xl border border-gray-100 shadow-sm p-5'>
           <div className='flex items-center justify-between mb-3'>
             <h3 className='font-semibold text-gray-700'>Patient Premium</h3>
-            <span className='bg-purple-100 text-purple-700 text-xs font-semibold px-2 py-1 rounded-full'>$3.59/mo</span>
+            <span className='bg-purple-100 text-purple-700 text-xs font-semibold px-2 py-1 rounded-full'>₹299/mo</span>
           </div>
           <p className='text-3xl font-bold text-gray-800'>{stats.activePremiumPatients}</p>
           <p className='text-sm text-gray-400 mt-1'>Active subscribers</p>
-          <p className='text-sm text-emerald-600 font-medium mt-2'>≈ ${stats.patientSubRevenue.toFixed(2)}/mo</p>
+          <p className='text-sm text-emerald-600 font-medium mt-2'>≈ ₹{stats.patientSubRevenue.toFixed(2)}/mo</p>
         </div>
       </div>
 
@@ -184,8 +184,8 @@ const Revenue = () => {
                     <td className='px-5 py-3 text-gray-400'>{i + 1}</td>
                     <td className='px-5 py-3 text-gray-700'>{item.patientName || '—'}</td>
                     <td className='px-5 py-3 text-gray-700'>{item.doctorName || '—'}</td>
-                    <td className='px-5 py-3 font-medium text-gray-800'>${(item.amount || 0).toFixed(2)}</td>
-                    <td className='px-5 py-3 font-semibold text-emerald-600'>${(item.commission || 0).toFixed(2)}</td>
+                    <td className='px-5 py-3 font-medium text-gray-800'>₹{(item.amount || 0).toFixed(2)}</td>
+                    <td className='px-5 py-3 font-semibold text-emerald-600'>₹{(item.commission || 0).toFixed(2)}</td>
                     <td className='px-5 py-3 text-gray-400'>
                       {item.date ? new Date(item.date).toLocaleDateString() : '—'}
                     </td>

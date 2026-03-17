@@ -72,10 +72,11 @@ const createPaymentIntent = async (req, res) => {
         // Update doctor's booked slots
         await doctorModel.findByIdAndUpdate(docId, { slots_booked });
 
-        // Create Stripe payment intent
+        // Create Stripe payment intent (INR, minimum ₹50 per Stripe rules)
+        const chargeAmount = Math.max(Math.round(finalAmount), 50)
         const paymentIntent = await stripe.paymentIntents.create({
-            amount: Math.round(finalAmount * 100), // amount in smallest currency unit
-            currency: 'usd',
+            amount: chargeAmount * 100, // Stripe INR uses paise (1 INR = 100 paise)
+            currency: 'inr',
             metadata: {
                 appointmentId: newAppointment._id.toString(),
                 userId: userId,
@@ -93,7 +94,7 @@ const createPaymentIntent = async (req, res) => {
             clientSecret: paymentIntent.client_secret,
             appointmentId: newAppointment._id,
             originalFee: docData.fees,
-            finalAmount,
+            finalAmount: chargeAmount,
             discountPercent,
             message: 'Payment intent created successfully'
         });
@@ -170,10 +171,11 @@ const payForAppointment = async (req, res) => {
             return res.json({ success: false, message: 'Appointment is cancelled' });
         }
 
-        // Create Stripe payment intent
+        // Create Stripe payment intent (INR, minimum ₹50 per Stripe rules)
+        const chargeAmount = Math.max(Math.round(appointment.amount), 50)
         const paymentIntent = await stripe.paymentIntents.create({
-            amount: Math.round(appointment.amount * 100), // Stripe expects amount in cents
-            currency: 'usd',
+            amount: chargeAmount * 100, // paise
+            currency: 'inr',
             metadata: {
                 appointmentId: appointment._id.toString(),
                 userId: appointment.userId,

@@ -145,10 +145,10 @@ const getAdminRevenueStats = async (req, res) => {
         const activeFeatured = doctors.filter(d => d.isFeatured && d.featuredUntil && d.featuredUntil > now).length;
         const activePremiumPatients = users.filter(u => u.plan === 'premium' && u.planExpiry && u.planExpiry > now).length;
 
-        // Estimated monthly subscription revenue (current active subs × monthly price)
-        const doctorSubRevenue = activeDoctorPro * 11.99;
-        const featuredRevenue = activeFeatured * 5.99;
-        const patientSubRevenue = activePremiumPatients * 3.59;
+        // Estimated monthly subscription revenue (current active subs × monthly price in INR)
+        const doctorSubRevenue = activeDoctorPro * 999;
+        const featuredRevenue = activeFeatured * 499;
+        const patientSubRevenue = activePremiumPatients * 299;
 
         // Appointment count breakdown
         const paidAppointments = appointments.length;
