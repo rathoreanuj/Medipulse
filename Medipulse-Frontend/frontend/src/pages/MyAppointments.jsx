@@ -118,10 +118,6 @@ const MyAppointments = () => {
     return (
         <div className='max-w-6xl mx-auto px-4 py-8'>
             {/* Header Section */}
-            <div className='mb-8 text-center'>
-                <h1 className='text-3xl font-bold text-gray-800 mb-2'>My Appointments</h1>
-                <p className='text-gray-600'>Manage and track all your medical appointments</p>
-            </div>
 
             {/* Appointments List */}
             <div className='space-y-4'>
