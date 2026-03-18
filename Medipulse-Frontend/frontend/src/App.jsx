@@ -15,6 +15,8 @@ import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import VideoConsultation from './pages/VideoConsultation'
 import Chat from './pages/Chat'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsOfService from './pages/TermsOfService'
 import Footer from './components/Footer'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -42,6 +44,9 @@ const App = () => {
         <Route path='/chat/:appointmentId' element={<Chat />} />
         <Route path='/video-call/:appointmentId' element={<VideoConsultation />} />
         <Route path='/verify' element={<Verify />} />
+        <Route path='/privacy-policy' element={<PrivacyPolicy />} />
+        <Route path='/terms-of-service' element={<TermsOfService />} />
+        <Route path='/terms' element={<TermsOfService />} />
       </Routes>
       <Footer />
     </div>
