@@ -5,6 +5,7 @@ import userModel from '../models/userModel.js'
 import doctorModel from '../models/doctorModel.js'
 import { createSystemNotification } from '../services/systemNotificationService.js'
 import { sendChatNotificationEmail } from '../services/chatNotificationEmailService.js'
+import logger from '../utils/logger.js'
 
 const registerSocketHandlers = (io) => {
   io.on('connection', (socket) => {
@@ -126,7 +127,7 @@ const registerSocketHandlers = (io) => {
             fromName: senderName,
             message: shortMessage,
             appointmentId
-          }).catch((error) => console.log('Chat email error:', error.message))
+          }).catch((error) => logger.warn('Chat email error', { error: error.message, appointmentId }))
 
           return
         }
@@ -157,7 +158,7 @@ const registerSocketHandlers = (io) => {
           fromName: senderName,
           message: shortMessage,
           appointmentId
-        }).catch((error) => console.log('Chat email error:', error.message))
+        }).catch((error) => logger.warn('Chat email error', { error: error.message, appointmentId }))
       } catch (error) {
         socket.emit('error', error.message)
       }

@@ -1,4 +1,5 @@
 import notificationModel from '../models/notificationModel.js'
+import logger from '../utils/logger.js'
 
 let ioInstance = null
 
@@ -53,7 +54,7 @@ const createNotification = async ({
 
     return notification
   } catch (error) {
-    console.log('Notification service error:', error.message)
+    logger.error('Notification service error', { error: error.message })
     return null
   }
 }

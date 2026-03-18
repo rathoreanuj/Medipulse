@@ -2,6 +2,7 @@ import appointmentModel from '../models/appointmentModel.js'
 import notificationModel from '../models/notificationModel.js'
 import { createSystemNotification } from '../services/systemNotificationService.js'
 import { getWeekStart } from '../utils/dateTime.js'
+import logger from '../utils/logger.js'
 
 const sendWeeklyRevenueSummaryNotification = async () => {
   const now = new Date()
@@ -38,11 +39,14 @@ const sendWeeklyRevenueSummaryNotification = async () => {
 }
 
 const startWeeklyRevenueNotificationJob = () => {
-  setInterval(() => {
+  const timer = setInterval(() => {
     sendWeeklyRevenueSummaryNotification().catch((error) => {
-      console.log('Weekly revenue notification error:', error.message)
+      logger.error('Weekly revenue notification error', { error: error.message })
     })
   }, 60 * 60 * 1000)
+
+  logger.info('Weekly revenue notification job started', { intervalMs: 60 * 60 * 1000 })
+  return timer
 }
 
 export { sendWeeklyRevenueSummaryNotification, startWeeklyRevenueNotificationJob }

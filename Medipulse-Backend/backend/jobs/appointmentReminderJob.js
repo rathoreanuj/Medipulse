@@ -3,6 +3,7 @@ import userModel from '../models/userModel.js'
 import { sendAppointmentReminderEmail } from '../services/emailService.js'
 import { createSystemNotification } from '../services/systemNotificationService.js'
 import { parseAppointmentDateTime } from '../utils/dateTime.js'
+import logger from '../utils/logger.js'
 
 const sendUpcomingAppointmentReminders = async () => {
   const now = Date.now()
@@ -58,7 +59,7 @@ const sendUpcomingAppointmentReminders = async () => {
             appt.consultationType || (isVideo ? 'video' : 'clinic')
           )
         } catch (emailErr) {
-          console.log('Reminder email failed:', emailErr.message)
+          logger.warn('Reminder email failed', { error: emailErr.message, appointmentId: String(appt._id) })
         }
       }
 
@@ -85,11 +86,14 @@ const sendUpcomingAppointmentReminders = async () => {
 }
 
 const startAppointmentReminderJob = () => {
-  setInterval(() => {
+  const timer = setInterval(() => {
     sendUpcomingAppointmentReminders().catch((error) => {
-      console.log('Reminder job error:', error.message)
+      logger.error('Reminder job error', { error: error.message })
     })
   }, 60 * 1000)
+
+  logger.info('Appointment reminder job started', { intervalMs: 60 * 1000 })
+  return timer
 }
 
 export { sendUpcomingAppointmentReminders, startAppointmentReminderJob }
