@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer'
+import { createNotification } from '../services/notificationService.js'
 
 const sendContactEmail = async (req, res) => {
     try {
@@ -83,6 +84,16 @@ const sendContactEmail = async (req, res) => {
 
         await transporter.sendMail(adminMailOptions)
         await transporter.sendMail(userMailOptions)
+
+        await createNotification({
+            recipientType: 'admin',
+            recipientId: 'global',
+            type: 'complaint',
+            title: 'New contact complaint received',
+            message: `${name} submitted a contact request: ${String(message).slice(0, 120)}`,
+            link: '/contact-messages',
+            meta: { name, email, phone }
+        })
 
         res.json({ success: true, message: 'Message sent successfully!' })
 

@@ -2,6 +2,18 @@ import notificationModel from '../models/notificationModel.js'
 
 let ioInstance = null
 
+const ALLOWED_NOTIFICATION_TYPES = {
+  user: new Set(['chat', 'reminder', 'appointment']),
+  doctor: new Set(['chat', 'reminder', 'appointment', 'admin']),
+  admin: new Set(['complaint', 'weekly-revenue', 'premium-joined', 'admin'])
+}
+
+const isNotificationAllowed = (recipientType, type) => {
+  const allowedTypes = ALLOWED_NOTIFICATION_TYPES[recipientType]
+  if (!allowedTypes) return false
+  return allowedTypes.has(type)
+}
+
 const getRoomName = (recipientType, recipientId) => {
   if (recipientType === 'admin') return 'admin-global'
   return `${recipientType}-${recipientId}`
@@ -21,6 +33,10 @@ const createNotification = async ({
   meta = {}
 }) => {
   try {
+    if (!isNotificationAllowed(recipientType, type)) {
+      return null
+    }
+
     const notification = await notificationModel.create({
       recipientType,
       recipientId,

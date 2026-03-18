@@ -21,6 +21,7 @@ import appointmentModel from "./models/appointmentModel.js"
 import chatModel from "./models/chatModel.js"
 import userModel from "./models/userModel.js"
 import doctorModel from "./models/doctorModel.js"
+import notificationModel from "./models/notificationModel.js"
 import { createNotification, setNotificationSocketServer } from "./services/notificationService.js"
 import { sendAppointmentReminderEmail } from "./services/emailService.js"
 
@@ -94,6 +95,49 @@ const createSystemNotification = async ({ recipientType, recipientId, title, mes
   } catch (error) {
     console.log('Notification create error:', error.message)
   }
+}
+
+const getWeekStart = (date = new Date()) => {
+  const d = new Date(date)
+  const day = d.getDay() // 0(Sun)-6(Sat)
+  const diffToMonday = day === 0 ? -6 : 1 - day
+  d.setDate(d.getDate() + diffToMonday)
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
+const sendWeeklyRevenueSummaryNotification = async () => {
+  const now = new Date()
+  const weekStart = getWeekStart(now)
+  const weekKey = `${weekStart.getFullYear()}-${weekStart.getMonth() + 1}-${weekStart.getDate()}`
+
+  const alreadySent = await notificationModel.findOne({
+    recipientType: 'admin',
+    recipientId: 'global',
+    type: 'weekly-revenue',
+    'meta.weekKey': weekKey
+  }).lean()
+
+  if (alreadySent) return
+
+  const weeklyAppointments = await appointmentModel.find({
+    payment: true,
+    cancelled: false,
+    date: { $gte: weekStart.getTime(), $lte: now.getTime() }
+  }).select('amount commission')
+
+  const weeklyRevenue = weeklyAppointments.reduce((sum, item) => sum + (item.amount || 0), 0)
+  const weeklyCommission = weeklyAppointments.reduce((sum, item) => sum + (item.commission || 0), 0)
+
+  await createSystemNotification({
+    recipientType: 'admin',
+    recipientId: 'global',
+    type: 'weekly-revenue',
+    title: 'Weekly revenue snapshot',
+    message: `This week: ${weeklyAppointments.length} paid appointments, ₹${Math.round(weeklyRevenue)} gross revenue, ₹${Math.round(weeklyCommission)} commission.`,
+    link: '/revenue-dashboard',
+    meta: { weekKey, weeklyAppointments: weeklyAppointments.length, weeklyRevenue, weeklyCommission }
+  })
 }
 
 const allowedOrigins = [
@@ -484,6 +528,12 @@ setInterval(() => {
     console.log('Reminder job error:', error.message)
   })
 }, 60 * 1000)
+
+setInterval(() => {
+  sendWeeklyRevenueSummaryNotification().catch((error) => {
+    console.log('Weekly revenue notification error:', error.message)
+  })
+}, 60 * 60 * 1000)
 
 httpServer.listen(port, () => console.log(`Server started on http://localhost:${port}`))
 

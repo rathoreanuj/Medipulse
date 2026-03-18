@@ -53,23 +53,13 @@ const appointmentCancel = async (req, res) => {
             await createNotification({
                 recipientType: 'doctor',
                 recipientId: appointmentData.docId,
-                type: 'appointment',
+                type: 'admin',
                 title: 'Appointment cancelled by admin',
                 message: `An appointment on ${appointmentData.slotDate} at ${appointmentData.slotTime} was cancelled by admin.`,
                 link: '/doctor-appointments',
                 meta: { appointmentId }
             });
         }
-
-        await createNotification({
-            recipientType: 'admin',
-            recipientId: 'global',
-            type: 'system',
-            title: 'Appointment cancelled',
-            message: `Admin cancelled appointment ${appointmentId}.`,
-            link: '/all-appointments',
-            meta: { appointmentId }
-        });
 
         res.json({ success: true, message: 'Appointment Cancelled' });
     } catch (error) {
@@ -110,16 +100,6 @@ const addDoctor = async (req, res) => {
         };
         const newDoctor = new doctorModel(doctorData);
         await newDoctor.save();
-
-        await createNotification({
-            recipientType: 'admin',
-            recipientId: 'global',
-            type: 'system',
-            title: 'Doctor added',
-            message: `${name} was added to the platform.`,
-            link: '/doctor-list',
-            meta: { doctorId: newDoctor._id }
-        });
 
         res.json({ success: true, message: 'Doctor Added' });
     } catch (error) {
@@ -209,16 +189,6 @@ const deleteDoctor = async (req, res) => {
             { docId, cancelled: false, isCompleted: false },
             { cancelled: true }
         );
-
-        await createNotification({
-            recipientType: 'admin',
-            recipientId: 'global',
-            type: 'system',
-            title: 'Doctor deleted',
-            message: `${doctorData?.name || 'Doctor'} was removed from the platform.`,
-            link: '/doctor-list',
-            meta: { doctorId: docId }
-        });
 
         res.json({ success: true, message: 'Doctor Deleted' });
     } catch (error) {

@@ -2,6 +2,7 @@ import Stripe from 'stripe';
 import doctorModel from '../models/doctorModel.js';
 import userModel from '../models/userModel.js';
 import appointmentModel from '../models/appointmentModel.js';
+import { createNotification } from '../services/notificationService.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -106,7 +107,18 @@ const verifySubscriptionPayment = async (req, res) => {
         const expiry = new Date(Date.now() + plan.durationDays * 24 * 60 * 60 * 1000);
 
         if (type === 'doctor_pro' && docId) {
-            await doctorModel.findByIdAndUpdate(docId, { plan: 'pro', planExpiry: expiry });
+            const doctor = await doctorModel.findByIdAndUpdate(docId, { plan: 'pro', planExpiry: expiry }).select('name');
+
+            await createNotification({
+                recipientType: 'admin',
+                recipientId: 'global',
+                type: 'premium-joined',
+                title: 'Doctor joined premium',
+                message: `${doctor?.name || 'A doctor'} activated Doctor Pro plan.`,
+                link: '/revenue-dashboard',
+                meta: { docId, plan: 'doctor_pro', expiry }
+            });
+
             return res.json({ success: true, message: 'Doctor Pro plan activated', expiry });
         }
 
@@ -116,7 +128,18 @@ const verifySubscriptionPayment = async (req, res) => {
         }
 
         if (type === 'patient_premium' && userId) {
-            await userModel.findByIdAndUpdate(userId, { plan: 'premium', planExpiry: expiry });
+            const user = await userModel.findByIdAndUpdate(userId, { plan: 'premium', planExpiry: expiry }).select('name');
+
+            await createNotification({
+                recipientType: 'admin',
+                recipientId: 'global',
+                type: 'premium-joined',
+                title: 'Patient joined premium',
+                message: `${user?.name || 'A patient'} activated Premium plan.`,
+                link: '/revenue-dashboard',
+                meta: { userId, plan: 'patient_premium', expiry }
+            });
+
             return res.json({ success: true, message: 'Patient Premium plan activated', expiry });
         }
 
