@@ -13,18 +13,6 @@ const FilterSection = ({ title, children }) => (
   </div>
 )
 
-// ─── Pill button ──────────────────────────────────────────────────────────────
-const Pill = ({ active, onClick, children }) => (
-  <button
-    onClick={onClick}
-    className={`px-3 py-1.5 rounded-lg border-2 text-sm font-medium transition-all duration-200 w-full text-left ${
-      active ? 'bg-primary text-white border-primary shadow-sm' : 'border-gray-200 text-gray-700 hover:border-primary hover:bg-blue-50'
-    }`}
-  >
-    {children}
-  </button>
-)
-
 const SPECIALITIES = [
   'General physician', 'Gynecologist', 'Dermatologist',
   'Pediatricians', 'Neurologist', 'Gastroenterologist',
@@ -36,6 +24,27 @@ const SORT_OPTIONS = [
   { value: 'fee_asc', label: 'Fee: Low to High' },
   { value: 'fee_desc', label: 'Fee: High to Low' },
   { value: 'exp_desc', label: 'Experience: Most First' },
+]
+
+const RATING_OPTIONS = [
+  { value: '0', label: 'Any Rating' },
+  { value: '3', label: '3★ & above' },
+  { value: '4', label: '4★ & above' },
+  { value: '4.5', label: '4.5★ & above' },
+]
+
+const EXPERIENCE_OPTIONS = [
+  { value: '', label: 'Any Experience' },
+  { value: '0-5', label: '0 - 5 Years' },
+  { value: '5-10', label: '5 - 10 Years' },
+  { value: '10+', label: '10+ Years' },
+]
+
+const FEE_OPTIONS = [
+  { value: '', label: 'Any Fee' },
+  { value: 'u500', label: 'Under ₹500' },
+  { value: '500-1000', label: '₹500 - ₹1,000' },
+  { value: '1000+', label: '₹1,000+' },
 ]
 
 const Doctors = () => {
@@ -61,6 +70,7 @@ const Doctors = () => {
   const smartQuery    = location.state?.query         ?? ''
 
   const clearSmartSearch = () => navigate('/doctors', { replace: true, state: {} })
+  const handleSpecialityChange = (value) => navigate(value ? `/doctors/${value}` : '/doctors')
 
   const activeFilterCount = [
     availOnly, minRating > 0, expRange !== '', feeRange !== '', sortBy !== 'featured',
@@ -155,7 +165,7 @@ const Doctors = () => {
             </button>
 
             {/* Sidebar Filter */}
-            <div className={`flex-col gap-4 ${showFilter ? 'flex' : 'hidden sm:flex'} sm:w-64 flex-shrink-0`}>
+            <div className={`flex-col gap-4 ${showFilter ? 'flex' : 'hidden sm:flex'} sm:w-64 flex-shrink-0 sm:sticky sm:top-24 sm:max-h-[calc(100vh-7rem)] sm:overflow-y-auto`}>
               <div className='bg-white border border-gray-200 rounded-xl p-4 shadow-sm'>
 
                 {/* Header */}
@@ -188,17 +198,16 @@ const Doctors = () => {
 
                 {/* ── Speciality ── */}
                 <FilterSection title='Speciality'>
-                  <div className='space-y-2'>
+                  <select
+                    value={speciality || ''}
+                    onChange={e => handleSpecialityChange(e.target.value)}
+                    className='w-full border-2 border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-primary bg-white'
+                  >
+                    <option value=''>All Specialities</option>
                     {SPECIALITIES.map(sp => (
-                      <Pill
-                        key={sp}
-                        active={speciality === sp}
-                        onClick={() => speciality === sp ? navigate('/doctors') : navigate(`/doctors/${sp}`)}
-                      >
-                        {sp === 'General physician' ? 'General Physician' : sp}
-                      </Pill>
+                      <option key={sp} value={sp}>{sp === 'General physician' ? 'General Physician' : sp}</option>
                     ))}
-                  </div>
+                  </select>
                 </FilterSection>
 
                 {/* ── Availability ── */}
@@ -216,50 +225,41 @@ const Doctors = () => {
 
                 {/* ── Min Rating ── */}
                 <FilterSection title='Minimum Rating'>
-                  <div className='space-y-2'>
-                    {[
-                      { val: 0,   label: 'Any Rating' },
-                      { val: 3,   label: '3★ & above' },
-                      { val: 4,   label: '4★ & above' },
-                      { val: 4.5, label: '4.5★ & above' },
-                    ].map(({ val, label }) => (
-                      <Pill key={val} active={minRating === val} onClick={() => setMinRating(val)}>
-                        {label}
-                      </Pill>
+                  <select
+                    value={String(minRating)}
+                    onChange={e => setMinRating(Number(e.target.value))}
+                    className='w-full border-2 border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-primary bg-white'
+                  >
+                    {RATING_OPTIONS.map(option => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
-                  </div>
+                  </select>
                 </FilterSection>
 
                 {/* ── Experience ── */}
                 <FilterSection title='Experience'>
-                  <div className='space-y-2'>
-                    {[
-                      { val: '',     label: 'Any Experience' },
-                      { val: '0-5',  label: '0 – 5 Years' },
-                      { val: '5-10', label: '5 – 10 Years' },
-                      { val: '10+',  label: '10+ Years' },
-                    ].map(({ val, label }) => (
-                      <Pill key={val} active={expRange === val} onClick={() => setExpRange(val)}>
-                        {label}
-                      </Pill>
+                  <select
+                    value={expRange}
+                    onChange={e => setExpRange(e.target.value)}
+                    className='w-full border-2 border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-primary bg-white'
+                  >
+                    {EXPERIENCE_OPTIONS.map(option => (
+                      <option key={option.value || 'any'} value={option.value}>{option.label}</option>
                     ))}
-                  </div>
+                  </select>
                 </FilterSection>
 
                 {/* ── Fee Range ── */}
                 <FilterSection title='Consultation Fee'>
-                  <div className='space-y-2'>
-                    {[
-                      { val: '',        label: 'Any Fee' },
-                      { val: 'u500',    label: 'Under ₹500' },
-                      { val: '500-1000',label: '₹500 – ₹1,000' },
-                      { val: '1000+',   label: '₹1,000+' },
-                    ].map(({ val, label }) => (
-                      <Pill key={val} active={feeRange === val} onClick={() => setFeeRange(val)}>
-                        {label}
-                      </Pill>
+                  <select
+                    value={feeRange}
+                    onChange={e => setFeeRange(e.target.value)}
+                    className='w-full border-2 border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-primary bg-white'
+                  >
+                    {FEE_OPTIONS.map(option => (
+                      <option key={option.value || 'any'} value={option.value}>{option.label}</option>
                     ))}
-                  </div>
+                  </select>
                 </FilterSection>
 
               </div>
