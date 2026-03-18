@@ -3,6 +3,7 @@ import { useContext, useState } from "react";
 import { AppContext } from "../context/AppContext";
 import axios from "axios";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 export default function Stats() {
   const { doctors, backendUrl } = useContext(AppContext);
@@ -150,6 +151,15 @@ export default function Stats() {
                 </h3>
                 <p className="text-gray-600 font-medium">Support Available</p>
               </motion.div>
+            </div>
+
+            <div className="mt-10 flex justify-center">
+              <Link
+                to="/premium-plan"
+                className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-3 text-sm font-semibold text-white transition-all duration-300 hover:opacity-90 hover:shadow-lg"
+              >
+                Join Premium
+              </Link>
             </div>
           </motion.div>
         </div>
