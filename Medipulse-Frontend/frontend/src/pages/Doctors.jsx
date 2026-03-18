@@ -165,7 +165,7 @@ const Doctors = () => {
             </button>
 
             {/* Sidebar Filter */}
-            <div className={`flex-col gap-4 ${showFilter ? 'flex' : 'hidden sm:flex'} sm:w-64 flex-shrink-0 sm:sticky sm:top-24 sm:max-h-[calc(100vh-7rem)] sm:overflow-y-auto`}>
+            <div className={`flex-col gap-4 ${showFilter ? 'flex' : 'hidden sm:flex'} sm:w-64 flex-shrink-0`}>
               <div className='bg-white border border-gray-200 rounded-xl p-4 shadow-sm'>
 
                 {/* Header */}
