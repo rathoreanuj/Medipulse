@@ -6,6 +6,7 @@ import validator from "validator";
 import { v2 as cloudinary } from "cloudinary";
 import userModel from "../models/userModel.js";
 import { createNotification } from "../services/notificationService.js";
+import logger from "../utils/logger.js";
 
 // this is the login controller
 const loginAdmin = async (req, res) => {
@@ -18,7 +19,7 @@ const loginAdmin = async (req, res) => {
             res.json({ success: false, message: "Invalid credentials" });
         }
     } catch (error) {
-        console.log(error);
+        logger.error('Admin controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };
@@ -28,7 +29,7 @@ const appointmentsAdmin = async (req, res) => {
         const appointments = await appointmentModel.find({});
         res.json({ success: true, appointments });
     } catch (error) {
-        console.log(error);
+        logger.error('Admin controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };
@@ -63,7 +64,7 @@ const appointmentCancel = async (req, res) => {
 
         res.json({ success: true, message: 'Appointment Cancelled' });
     } catch (error) {
-        console.log(error);
+        logger.error('Admin controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };
@@ -103,7 +104,7 @@ const addDoctor = async (req, res) => {
 
         res.json({ success: true, message: 'Doctor Added' });
     } catch (error) {
-        console.log(error);
+        logger.error('Admin controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };
@@ -113,7 +114,7 @@ const allDoctors = async (req, res) => {
         const doctors = await doctorModel.find({}).select('-password');
         res.json({ success: true, doctors });
     } catch (error) {
-        console.log(error);
+        logger.error('Admin controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };
@@ -131,7 +132,7 @@ const adminDashboard = async (req, res) => {
         };
         res.json({ success: true, dashData });
     } catch (error) {
-        console.log(error);
+        logger.error('Admin controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };
@@ -156,7 +157,7 @@ const fixCompletedAppointments = async (req, res) => {
             count: result.modifiedCount
         });
     } catch (error) {
-        console.log(error);
+        logger.error('Admin controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };
@@ -174,7 +175,7 @@ const publicStats = async (req, res) => {
         
         res.json({ success: true, stats: statsData });
     } catch (error) {
-        console.log(error);
+        logger.error('Admin controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };
@@ -192,7 +193,7 @@ const deleteDoctor = async (req, res) => {
 
         res.json({ success: true, message: 'Doctor Deleted' });
     } catch (error) {
-        console.log(error);
+        logger.error('Admin controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };

@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import logger from './utils/logger.js';
 
 // Load environment variables
 dotenv.config();
@@ -8,9 +9,9 @@ dotenv.config();
 const connectDB = async () => {
     try {
         await mongoose.connect(process.env.MONGODB_URI);
-        console.log('✅ Connected to MongoDB');
+        logger.info('Connected to MongoDB');
     } catch (error) {
-        console.error('❌ MongoDB connection error:', error);
+        logger.error('MongoDB connection error', { error: error.message });
         process.exit(1);
     }
 };
@@ -37,7 +38,7 @@ const fixCompletedAppointments = async () => {
     try {
         await connectDB();
         
-        console.log('\n🔍 Searching for completed appointments with unpaid status...\n');
+        logger.info('Searching for completed appointments with unpaid status');
         
         // Find all appointments that are completed but payment is false
         const appointmentsToFix = await appointmentModel.find({
@@ -47,18 +48,21 @@ const fixCompletedAppointments = async () => {
         });
         
         if (appointmentsToFix.length === 0) {
-            console.log('✅ No appointments need fixing. All completed appointments are marked as paid.');
+            logger.info('No appointments need fixing. All completed appointments are marked as paid.');
             process.exit(0);
         }
         
-        console.log(`📋 Found ${appointmentsToFix.length} completed appointment(s) with unpaid status:\n`);
+        logger.info('Found completed appointments with unpaid status', { count: appointmentsToFix.length });
         
         appointmentsToFix.forEach((apt, index) => {
-            console.log(`${index + 1}. Doctor: ${apt.docData.name}`);
-            console.log(`   Patient: ${apt.userData.name}`);
-            console.log(`   Date: ${apt.slotDate} at ${apt.slotTime}`);
-            console.log(`   Amount: ₹${apt.amount}`);
-            console.log(`   Status: Completed ✓, Payment: Unpaid ✗\n`);
+            logger.info('Appointment to fix', {
+                index: index + 1,
+                doctor: apt.docData.name,
+                patient: apt.userData.name,
+                slotDate: apt.slotDate,
+                slotTime: apt.slotTime,
+                amount: apt.amount
+            });
         });
         
         // Update all these appointments
@@ -73,16 +77,16 @@ const fixCompletedAppointments = async () => {
             }
         );
         
-        console.log(`✅ Successfully updated ${result.modifiedCount} appointment(s)!`);
-        console.log(`\n📊 Summary:`);
-        console.log(`   - Appointments found: ${appointmentsToFix.length}`);
-        console.log(`   - Appointments updated: ${result.modifiedCount}`);
-        console.log(`   - Status: All completed appointments are now marked as PAID ✓\n`);
+        logger.info('Successfully updated appointments', {
+            appointmentsFound: appointmentsToFix.length,
+            appointmentsUpdated: result.modifiedCount,
+            status: 'All completed appointments are now marked as PAID'
+        });
         
         process.exit(0);
         
     } catch (error) {
-        console.error('❌ Error fixing appointments:', error);
+        logger.error('Error fixing appointments', { error: error.message });
         process.exit(1);
     }
 };

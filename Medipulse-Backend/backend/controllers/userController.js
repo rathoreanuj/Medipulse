@@ -9,6 +9,7 @@ import reviewModel from "../models/reviewModel.js";
 import { v2 as cloudinary } from 'cloudinary';
 import { createNotification } from "../services/notificationService.js";
 import { sendOtpEmail, sendPasswordResetEmail } from "../services/emailService.js";
+import logger from "../utils/logger.js";
 
 const registerUser = async (req, res) => {
     try {
@@ -30,7 +31,7 @@ const registerUser = async (req, res) => {
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
         res.json({ success: true, token });
     } catch (error) {
-        console.log(error);
+        logger.error('User controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };
@@ -66,7 +67,7 @@ const loginUser = async (req, res) => {
 
         res.json({ success: true, requiresOtp: true, tempToken });
     } catch (error) {
-        console.log(error);
+        logger.error('User controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };
@@ -112,7 +113,7 @@ const verifyOtp = async (req, res) => {
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
         res.json({ success: true, token });
     } catch (error) {
-        console.log(error);
+        logger.error('User controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };
@@ -139,7 +140,7 @@ const forgotPassword = async (req, res) => {
 
         res.json({ success: true, message: 'If that email is registered, a reset link has been sent.' });
     } catch (error) {
-        console.log(error);
+        logger.error('User controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };
@@ -169,7 +170,7 @@ const resetPassword = async (req, res) => {
 
         res.json({ success: true, message: 'Password reset successfully. You can now login.' });
     } catch (error) {
-        console.log(error);
+        logger.error('User controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };
@@ -180,7 +181,7 @@ const getProfile = async (req, res) => {
         const userData = await userModel.findById(userId).select('-password');
         res.json({ success: true, userData });
     } catch (error) {
-        console.log(error);
+        logger.error('User controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };
@@ -200,7 +201,7 @@ const updateProfile = async (req, res) => {
         }
         res.json({ success: true, message: 'Profile Updated' });
     } catch (error) {
-        console.log(error);
+        logger.error('User controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };
@@ -280,7 +281,7 @@ const bookAppointment = async (req, res) => {
         // For online payment, return reservation id so frontend can create payment intent
         res.json({ success: true, message: 'Slot Reserved', appointmentId: reservation._id, amount: finalAmount });
     } catch (error) {
-        console.log(error);
+        logger.error('User controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };
@@ -301,7 +302,7 @@ const cancelAppointment = async (req, res) => {
 
         res.json({ success: true, message: 'Appointment Cancelled' });
     } catch (error) {
-        console.log(error);
+        logger.error('User controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };
@@ -312,7 +313,7 @@ const listAppointment = async (req, res) => {
         const appointments = await appointmentModel.find({ userId });
         res.json({ success: true, appointments });
     } catch (error) {
-        console.log(error);
+        logger.error('User controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };
@@ -359,7 +360,7 @@ const submitReview = async (req, res) => {
 
         res.json({ success: true, message: 'Review submitted successfully' });
     } catch (error) {
-        console.log(error);
+        logger.error('User controller error', { error: error.message });
         if (error.code === 11000) {
             return res.json({ success: false, message: 'You have already reviewed this appointment' });
         }
@@ -385,7 +386,7 @@ const getDoctorReviews = async (req, res) => {
 
         res.json({ success: true, reviews: enriched });
     } catch (error) {
-        console.log(error);
+        logger.error('User controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };
@@ -398,7 +399,7 @@ const getUserReviewedAppointments = async (req, res) => {
         const reviewedIds = reviews.map(r => r.appointmentId);
         res.json({ success: true, reviewedIds });
     } catch (error) {
-        console.log(error);
+        logger.error('User controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };

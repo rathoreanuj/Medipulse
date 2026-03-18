@@ -1,4 +1,5 @@
 import notificationModel from '../models/notificationModel.js'
+import logger from '../utils/logger.js'
 
 const listNotifications = async (req, res) => {
   try {
@@ -16,7 +17,7 @@ const listNotifications = async (req, res) => {
 
     res.json({ success: true, notifications, unreadCount })
   } catch (error) {
-    console.log(error)
+    logger.error('Notification controller error', { error: error.message })
     res.json({ success: false, message: error.message })
   }
 }
@@ -48,7 +49,7 @@ const markNotificationRead = async (req, res) => {
 
     res.json({ success: true, unreadCount })
   } catch (error) {
-    console.log(error)
+    logger.error('Notification controller error', { error: error.message })
     res.json({ success: false, message: error.message })
   }
 }
@@ -64,7 +65,7 @@ const markAllNotificationsRead = async (req, res) => {
 
     res.json({ success: true, unreadCount: 0 })
   } catch (error) {
-    console.log(error)
+    logger.error('Notification controller error', { error: error.message })
     res.json({ success: false, message: error.message })
   }
 }

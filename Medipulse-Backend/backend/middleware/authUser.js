@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken'
+import logger from '../utils/logger.js'
 
 const authUser = async (req, res, next) => {
     const { token } = req.headers
@@ -10,7 +11,7 @@ const authUser = async (req, res, next) => {
         req.body.userId = token_decode.id
         next()
     } catch (error) {
-        console.log(error)
+        logger.error('authUser middleware error', { error: error.message })
         res.json({ success: false, message: error.message })
     }
 }

@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer'
 import { createNotification } from '../services/notificationService.js'
+import logger from '../utils/logger.js'
 
 const sendContactEmail = async (req, res) => {
     try {
@@ -98,7 +99,7 @@ const sendContactEmail = async (req, res) => {
         res.json({ success: true, message: 'Message sent successfully!' })
 
     } catch (error) {
-        console.log('Contact email error:', error)
+        logger.error('Contact email error', { error: error.message })
         res.json({ success: false, message: 'Failed to send message. Please try again.' })
     }
 }

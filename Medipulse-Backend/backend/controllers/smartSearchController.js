@@ -1,4 +1,5 @@
 import doctorModel from '../models/doctorModel.js';
+import logger from '../utils/logger.js';
 
 // ─── Speciality keyword map ────────────────────────────────────────────────
 const SPECIALITY_MAP = {
@@ -130,7 +131,7 @@ const smartSearch = async (req, res) => {
       totalFound: doctors.length,
     })
   } catch (error) {
-    console.error('Smart search error:', error.message)
+    logger.error('Smart search error', { error: error.message })
     res.json({ success: false, message: error.message })
   }
 }

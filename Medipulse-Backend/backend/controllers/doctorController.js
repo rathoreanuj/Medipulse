@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import doctorModel from "../models/doctorModel.js";
 import appointmentModel from "../models/appointmentModel.js";
 import { createNotification } from "../services/notificationService.js";
+import logger from "../utils/logger.js";
 
 const loginDoctor = async (req, res) => {
 
@@ -26,7 +27,7 @@ const loginDoctor = async (req, res) => {
 
 
     } catch (error) {
-        console.log(error)
+        logger.error('Doctor controller error', { error: error.message })
         res.json({ success: false, message: error.message })
     }
 }
@@ -40,7 +41,7 @@ const appointmentsDoctor = async (req, res) => {
         res.json({ success: true, appointments })
 
     } catch (error) {
-        console.log(error)
+        logger.error('Doctor controller error', { error: error.message })
         res.json({ success: false, message: error.message })
     }
 }
@@ -71,7 +72,7 @@ const appointmentCancel = async (req, res) => {
         res.json({ success: false, message: 'Appointment Cancelled' })
 
     } catch (error) {
-        console.log(error)
+        logger.error('Doctor controller error', { error: error.message })
         res.json({ success: false, message: error.message })
     }
 
@@ -85,10 +86,9 @@ const appointmentComplete = async (req, res) => {
         const appointmentData = await appointmentModel.findById(appointmentId)
         
         // Debug logging
-        console.log('=== APPOINTMENT COMPLETE DEBUG ===');
-        console.log('Appointment ID:', appointmentId);
-        console.log('Doctor ID:', docId);
-        console.log('Appointment Data:', {
+        logger.debug('Appointment complete debug start')
+        logger.debug('Appointment identifiers', { appointmentId, docId })
+        logger.debug('Appointment data snapshot', {
             id: appointmentData?._id,
             docId: appointmentData?.docId,
             isCompleted: appointmentData?.isCompleted,
@@ -103,29 +103,29 @@ const appointmentComplete = async (req, res) => {
             // If payment was offline (not paid online), automatically mark as paid when completed
             if (!appointmentData.payment) {
                 updateData.payment = true
-                console.log('Setting payment to true (was offline payment)');
+                logger.debug('Setting payment to true (offline payment)')
             } else {
-                console.log('Payment already true (was online payment)');
+                logger.debug('Payment already true (online payment)')
             }
             
-            console.log('Update Data:', updateData);
+            logger.debug('Appointment update payload', updateData)
             
             const result = await appointmentModel.findByIdAndUpdate(appointmentId, updateData, { new: true })
             
-            console.log('Updated Appointment:', {
+            logger.debug('Updated appointment', {
                 isCompleted: result.isCompleted,
                 payment: result.payment
             });
-            console.log('=== END DEBUG ===');
+            logger.debug('Appointment complete debug end')
 
             return res.json({ success: true, message: 'Appointment Completed' })
         }
 
-        console.log('ERROR: Doctor ID mismatch or appointment not found');
+        logger.warn('Doctor ID mismatch or appointment not found', { appointmentId, docId })
         res.json({ success: false, message: 'Appointment Cancelled' })
 
     } catch (error) {
-        console.log('ERROR in appointmentComplete:', error)
+        logger.error('Doctor appointmentComplete error', { error: error.message, appointmentId: req.body?.appointmentId })
         res.json({ success: false, message: error.message })
     }
 
@@ -138,7 +138,7 @@ const doctorList = async (req, res) => {
         res.json({ success: true, doctors })
 
     } catch (error) {
-        console.log(error)
+        logger.error('Doctor controller error', { error: error.message })
         res.json({ success: false, message: error.message })
     }
 
@@ -154,7 +154,7 @@ const changeAvailablity = async (req, res) => {
         res.json({ success: true, message: 'Availablity Changed' })
 
     } catch (error) {
-        console.log(error)
+        logger.error('Doctor controller error', { error: error.message })
         res.json({ success: false, message: error.message })
     }
 }
@@ -168,7 +168,7 @@ const doctorProfile = async (req, res) => {
         res.json({ success: true, profileData })
 
     } catch (error) {
-        console.log(error)
+        logger.error('Doctor controller error', { error: error.message })
         res.json({ success: false, message: error.message })
     }
 }
@@ -183,7 +183,7 @@ const updateDoctorProfile = async (req, res) => {
         res.json({ success: true, message: 'Profile Updated' })
 
     } catch (error) {
-        console.log(error)
+        logger.error('Doctor controller error', { error: error.message })
         res.json({ success: false, message: error.message })
     }
 }
@@ -223,7 +223,7 @@ const doctorDashboard = async (req, res) => {
         res.json({ success: true, dashData })
 
     } catch (error) {
-        console.log(error)
+        logger.error('Doctor controller error', { error: error.message })
         res.json({ success: false, message: error.message })
     }
 }

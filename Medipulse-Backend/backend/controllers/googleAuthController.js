@@ -1,6 +1,7 @@
 import { OAuth2Client } from 'google-auth-library';
 import jwt from 'jsonwebtoken';
 import userModel from '../models/userModel.js';
+import logger from '../utils/logger.js';
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -70,7 +71,7 @@ const googleAuth = async (req, res) => {
             message: 'Google sign-in successful',
         });
     } catch (error) {
-        console.log('Google Auth error:', error.message);
+        logger.error('Google Auth error', { error: error.message });
         res.json({ success: false, message: 'Google authentication failed. Please try again.' });
     }
 };

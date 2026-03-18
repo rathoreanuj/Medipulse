@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import appointmentModel from '../models/appointmentModel.js';
 import userModel from '../models/userModel.js';
 import doctorModel from '../models/doctorModel.js';
+import logger from '../utils/logger.js';
 
 // Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -54,7 +55,7 @@ const createPaymentIntent = async (req, res) => {
         });
 
     } catch (error) {
-        console.log(error);
+        logger.error('Payment controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };
@@ -114,7 +115,7 @@ const verifyPayment = async (req, res) => {
             });
         }
     } catch (error) {
-        console.log(error);
+        logger.error('Payment controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };
@@ -162,7 +163,7 @@ const payForAppointment = async (req, res) => {
         });
 
     } catch (error) {
-        console.log(error);
+        logger.error('Payment controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };

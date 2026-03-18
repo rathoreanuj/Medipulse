@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken'
+import logger from '../utils/logger.js'
 
 const authDoctor = async (req, res, next) => {
     const { dtoken } = req.headers
@@ -10,7 +11,7 @@ const authDoctor = async (req, res, next) => {
         req.body.docId = token_decode.id
         next()
     } catch (error) {
-        console.log(error)
+        logger.error('authDoctor middleware error', { error: error.message })
         res.json({ success: false, message: error.message })
     }
 }

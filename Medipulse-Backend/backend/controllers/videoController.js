@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import appointmentModel from '../models/appointmentModel.js';
+import logger from '../utils/logger.js';
 
 /**
  * Validates that the caller (patient or doctor) is authorized to join
@@ -67,7 +68,7 @@ const joinVideoRoom = async (req, res) => {
             }
         });
     } catch (error) {
-        console.log(error);
+        logger.error('Video controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };

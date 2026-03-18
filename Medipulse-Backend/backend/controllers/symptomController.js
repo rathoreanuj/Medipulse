@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import doctorModel from '../models/doctorModel.js';
+import logger from '../utils/logger.js';
 
 const genAI = process.env.GEMINI_API_KEY
     ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
@@ -124,10 +125,10 @@ const checkSymptoms = async (req, res) => {
             const raw = completion.response?.text?.()?.trim();
             aiResult = extractJson(raw);
             if (!aiResult) {
-                console.warn('Gemini non-JSON response, using fallback');
+                logger.warn('Gemini non-JSON response, using fallback');
             }
         } catch (aiError) {
-            console.warn('Gemini unavailable, using keyword fallback:', aiError?.message);
+            logger.warn('Gemini unavailable, using keyword fallback', { error: aiError?.message });
         }
 
         // Use fallback if Gemini failed
@@ -163,7 +164,7 @@ const checkSymptoms = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Symptom check error:', error?.message);
+        logger.error('Symptom check error', { error: error?.message });
         res.json({ success: false, message: 'Symptom check failed. Please try again.' });
     }
 };

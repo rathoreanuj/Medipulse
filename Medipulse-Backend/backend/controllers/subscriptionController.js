@@ -3,6 +3,7 @@ import doctorModel from '../models/doctorModel.js';
 import userModel from '../models/userModel.js';
 import appointmentModel from '../models/appointmentModel.js';
 import { createNotification } from '../services/notificationService.js';
+import logger from '../utils/logger.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -33,7 +34,7 @@ const getDoctorPlanStatus = async (req, res) => {
             featuredUntil: doctor.featuredUntil,
         });
     } catch (error) {
-        console.error(error);
+        logger.error('Subscription controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };
@@ -54,7 +55,7 @@ const getPatientPlanStatus = async (req, res) => {
             planExpiry: user.planExpiry,
         });
     } catch (error) {
-        console.error(error);
+        logger.error('Subscription controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };
@@ -85,7 +86,7 @@ const createSubscriptionPayment = async (req, res) => {
 
         res.json({ success: true, clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id });
     } catch (error) {
-        console.error(error);
+        logger.error('Subscription controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };
@@ -145,7 +146,7 @@ const verifySubscriptionPayment = async (req, res) => {
 
         res.json({ success: false, message: 'Could not activate plan – missing ID' });
     } catch (error) {
-        console.error(error);
+        logger.error('Subscription controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };
@@ -201,7 +202,7 @@ const getAdminRevenueStats = async (req, res) => {
             recentCommissions: commissionBreakdown,
         });
     } catch (error) {
-        console.error(error);
+        logger.error('Subscription controller error', { error: error.message });
         res.json({ success: false, message: error.message });
     }
 };

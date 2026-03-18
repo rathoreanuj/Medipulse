@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import appointmentModel from '../models/appointmentModel.js';
 import userModel from '../models/userModel.js';
 import { sendConsultationSummaryEmail } from '../services/emailService.js';
+import logger from '../utils/logger.js';
 
 const genAI = process.env.GEMINI_API_KEY
     ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
@@ -110,10 +111,10 @@ const generateConsultationSummary = async (req, res) => {
             const raw = completion.response?.text?.()?.trim();
             summary = extractJson(raw);
             if (!summary) {
-                console.warn('Gemini non-JSON summary, using fallback');
+                logger.warn('Gemini non-JSON summary, using fallback');
             }
         } catch (aiError) {
-            console.warn('Gemini summary failed, using fallback:', aiError?.message);
+            logger.warn('Gemini summary failed, using fallback', { error: aiError?.message });
         }
 
         if (!summary) {
@@ -139,7 +140,7 @@ const generateConsultationSummary = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Summary generation error:', error?.message);
+        logger.error('Summary generation error', { error: error?.message });
         res.json({ success: false, message: 'Failed to generate summary. Please try again.' });
     }
 };
