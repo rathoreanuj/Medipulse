@@ -1,10 +1,12 @@
-import OpenAI from 'openai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import jwt from 'jsonwebtoken';
 import appointmentModel from '../models/appointmentModel.js';
 import userModel from '../models/userModel.js';
 import { sendConsultationSummaryEmail } from '../services/emailService.js';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const genAI = process.env.GEMINI_API_KEY
+    ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+    : null;
 
 const SUMMARY_SYSTEM_PROMPT = `
 You are a medical documentation assistant for MediPulse.
@@ -42,6 +44,22 @@ const buildFallbackSummary = (notes, doctorName) => ({
     disclaimer: "This summary is AI-generated from doctor notes for informational purposes only. It does not replace professional medical advice. Always follow your doctor's instructions.",
 });
 
+const extractJson = (rawText) => {
+    if (!rawText) return null;
+
+    const cleaned = rawText.replace(/```json\s*/gi, '').replace(/```/g, '').trim();
+    const firstBrace = cleaned.indexOf('{');
+    const lastBrace = cleaned.lastIndexOf('}');
+    if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) return null;
+
+    const jsonSlice = cleaned.slice(firstBrace, lastBrace + 1);
+    try {
+        return JSON.parse(jsonSlice);
+    } catch {
+        return null;
+    }
+};
+
 // ── Main controller ──────────────────────────────────────────────────────────
 const generateConsultationSummary = async (req, res) => {
     try {
@@ -74,26 +92,28 @@ const generateConsultationSummary = async (req, res) => {
         let summary;
         let usedFallback = false;
 
-        // Try OpenAI
+        // Try Gemini
         try {
-            const completion = await openai.chat.completions.create({
-                model: 'gpt-4o-mini',
-                messages: [
-                    { role: 'system', content: SUMMARY_SYSTEM_PROMPT },
-                    { role: 'user', content: `Doctor: Dr. ${doctorName}\nPatient: ${patientName}\nConsultation notes: "${notes || 'No notes provided'}"\nSpeciality: ${appointment.docData?.speciality || 'General'}` },
-                ],
-                temperature: 0.4,
-                max_tokens: 500,
+            if (!genAI) throw new Error('GEMINI_API_KEY is not configured');
+
+            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+            const prompt = `${SUMMARY_SYSTEM_PROMPT}\n\nDoctor: Dr. ${doctorName}\nPatient: ${patientName}\nConsultation notes: "${notes || 'No notes provided'}"\nSpeciality: ${appointment.docData?.speciality || 'General'}`;
+
+            const completion = await model.generateContent({
+                contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                generationConfig: {
+                    temperature: 0.4,
+                    maxOutputTokens: 500,
+                },
             });
 
-            const raw = completion.choices[0]?.message?.content?.trim();
-            try {
-                summary = JSON.parse(raw);
-            } catch {
-                console.warn('OpenAI non-JSON summary, using fallback');
+            const raw = completion.response?.text?.()?.trim();
+            summary = extractJson(raw);
+            if (!summary) {
+                console.warn('Gemini non-JSON summary, using fallback');
             }
         } catch (aiError) {
-            console.warn('OpenAI summary failed, using fallback:', aiError?.message);
+            console.warn('Gemini summary failed, using fallback:', aiError?.message);
         }
 
         if (!summary) {

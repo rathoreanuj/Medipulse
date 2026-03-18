@@ -1,7 +1,9 @@
-import OpenAI from 'openai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import doctorModel from '../models/doctorModel.js';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const genAI = process.env.GEMINI_API_KEY
+    ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+    : null;
 
 const SUPPORTED_SPECIALITIES = [
     'General physician', 'Gynecologist', 'Dermatologist',
@@ -24,7 +26,7 @@ Supported specialities: ${SUPPORTED_SPECIALITIES.join(', ')}.
 Rules: Never diagnose. Never prescribe. Always recommend booking a doctor. If unclear use "General physician".
 `.trim();
 
-// ─── Keyword-based fallback (works without OpenAI) ────────────────────────────
+// ─── Keyword-based fallback (works without Gemini) ────────────────────────────
 const KEYWORD_MAP = [
     { keywords: ['chest pain', 'heart', 'palpitation', 'shortness of breath', 'breathless', 'cardiac', 'irregular heartbeat'], speciality: 'Cardiologist', urgency: 'high', reason: 'Chest and heart symptoms can be serious and require prompt medical evaluation.' },
     { keywords: ['headache', 'migraine', 'seizure', 'paralysis', 'numbness', 'dizziness', 'neurological', 'memory loss', 'tremor', 'blurred vision'], speciality: 'Neurologist', urgency: 'medium', reason: 'Neurological symptoms need professional assessment.' },
@@ -73,6 +75,22 @@ const keywordFallback = (symptoms) => {
     };
 };
 
+const extractJson = (rawText) => {
+    if (!rawText) return null;
+
+    const cleaned = rawText.replace(/```json\s*/gi, '').replace(/```/g, '').trim();
+    const firstBrace = cleaned.indexOf('{');
+    const lastBrace = cleaned.lastIndexOf('}');
+    if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) return null;
+
+    const jsonSlice = cleaned.slice(firstBrace, lastBrace + 1);
+    try {
+        return JSON.parse(jsonSlice);
+    } catch {
+        return null;
+    }
+};
+
 // ─── Main controller ──────────────────────────────────────────────────────────
 const checkSymptoms = async (req, res) => {
     try {
@@ -88,29 +106,31 @@ const checkSymptoms = async (req, res) => {
         let aiResult = null;
         let usedFallback = false;
 
-        // Try OpenAI first
+        // Try Gemini first
         try {
-            const completion = await openai.chat.completions.create({
-                model: 'gpt-4o-mini',
-                messages: [
-                    { role: 'system', content: SYSTEM_PROMPT },
-                    { role: 'user', content: `Patient says: "${symptoms.trim()}"` },
-                ],
-                temperature: 0.3,
-                max_tokens: 300,
+            if (!genAI) throw new Error('GEMINI_API_KEY is not configured');
+
+            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+            const prompt = `${SYSTEM_PROMPT}\n\nPatient says: "${symptoms.trim()}"`;
+
+            const completion = await model.generateContent({
+                contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                generationConfig: {
+                    temperature: 0.3,
+                    maxOutputTokens: 300,
+                },
             });
 
-            const raw = completion.choices[0]?.message?.content?.trim();
-            try {
-                aiResult = JSON.parse(raw);
-            } catch {
-                console.warn('OpenAI non-JSON response, using fallback');
+            const raw = completion.response?.text?.()?.trim();
+            aiResult = extractJson(raw);
+            if (!aiResult) {
+                console.warn('Gemini non-JSON response, using fallback');
             }
         } catch (aiError) {
-            console.warn('OpenAI unavailable, using keyword fallback:', aiError?.message);
+            console.warn('Gemini unavailable, using keyword fallback:', aiError?.message);
         }
 
-        // Use fallback if OpenAI failed
+        // Use fallback if Gemini failed
         if (!aiResult) {
             aiResult = keywordFallback(symptoms);
             usedFallback = true;

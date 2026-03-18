@@ -91,7 +91,7 @@ export default function SymptomChecker({ onClose }) {
                         </div>
                         <div>
                             <h2 className='font-bold text-gray-800 text-lg leading-tight'>AI Symptom Checker</h2>
-                            <p className='text-xs text-gray-400'>Powered by GPT · Not a diagnosis</p>
+                            <p className='text-xs text-gray-400'>Powered by Gemini · Not a diagnosis</p>
                         </div>
                     </div>
                     <button onClick={onClose} className='w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors'>

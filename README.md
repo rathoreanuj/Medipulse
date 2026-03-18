@@ -138,7 +138,7 @@ Medipulse/
 - Stripe payments
 - Socket.IO realtime layer
 - Nodemailer email delivery
-- OpenAI SDK (symptom triage + consultation summaries)
+- Google Gemini API (symptom triage + consultation summaries)
 - express-rate-limit
 
 ## Authentication and Security
@@ -202,8 +202,8 @@ STRIPE_SECRET_KEY=your_stripe_secret_key
 # Google OAuth
 GOOGLE_CLIENT_ID=your_google_client_id
 
-# OpenAI
-OPENAI_API_KEY=your_openai_api_key
+# Google Gemini
+GEMINI_API_KEY=your_gemini_api_key
 
 # Optional tuning
 VIDEO_DISCOUNT_PERCENT=20
