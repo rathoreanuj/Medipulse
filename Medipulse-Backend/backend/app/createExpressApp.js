@@ -8,6 +8,8 @@ import chatRouter from '../routes/chatRoute.js'
 import notificationRouter from '../routes/notificationRoute.js'
 import subscriptionRouter from '../routes/subscriptionRoute.js'
 import videoRouter from '../routes/videoRoute.js'
+import analyticsRouter from '../routes/analyticsRoute.js'
+import apiMetricsTracker from '../middleware/apiMetricsTracker.js'
 import { globalLimiter } from '../middleware/rateLimiter.js'
 import { corsMiddleware } from '../config/corsConfig.js'
 
@@ -17,6 +19,7 @@ const createExpressApp = () => {
   app.use(corsMiddleware)
   app.use(express.json())
   app.use(globalLimiter)
+  app.use(apiMetricsTracker)
 
   app.use('/api/user', userRouter)
   app.use('/api/admin', adminRouter)
@@ -27,6 +30,7 @@ const createExpressApp = () => {
   app.use('/api/notification', notificationRouter)
   app.use('/api/subscription', subscriptionRouter)
   app.use('/api/video', videoRouter)
+  app.use('/api/analytics', analyticsRouter)
 
   app.get('/', (_req, res) => {
     res.status(200).json({

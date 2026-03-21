@@ -1,6 +1,8 @@
-import React, { useContext, useEffect } from 'react'
+/* eslint-disable react/prop-types */
+import { useContext, useEffect } from 'react'
 import { AdminContext } from '../../context/AdminContext'
 import { AppContext } from '../../context/AppContext'
+import { useNavigate } from 'react-router-dom'
 import {
   LuStethoscope, LuCalendarDays, LuUsers, LuActivity,
   LuCheck, LuX, LuClock, LuArrowRight, LuTrendingUp
@@ -20,6 +22,14 @@ const StatCard = ({ label, value, icon, sub }) => (
       </div>
     </div>
     <div className='absolute -bottom-4 -right-4 w-24 h-24 rounded-full bg-blue-100/60' />
+  </div>
+)
+
+const ImpactCard = ({ label, value, sub }) => (
+  <div className='rounded-2xl p-4 bg-white border border-gray-100 shadow-sm'>
+    <p className='text-xs font-medium text-gray-500'>{label}</p>
+    <p className='text-2xl font-bold text-gray-800 mt-1'>{value}</p>
+    {sub && <p className='text-xs text-gray-400 mt-1'>{sub}</p>}
   </div>
 )
 
@@ -44,11 +54,18 @@ const StatusBadge = ({ item }) => {
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 const Dashboard = () => {
-  const { aToken, getDashData, cancelAppointment, dashData } = useContext(AdminContext)
+  const { aToken, getDashData, getImpactMetrics, dashData, impactMetrics } = useContext(AdminContext)
   const { slotDateFormat } = useContext(AppContext)
+  const navigate = useNavigate()
+
+  const formatPct = (value) => (typeof value === 'number' ? `${value.toFixed(2)}%` : '—')
 
   useEffect(() => {
-    if (aToken) getDashData()
+    if (aToken) {
+      getDashData()
+      getImpactMetrics(90)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [aToken])
 
   if (!dashData) {
@@ -79,7 +96,7 @@ const Dashboard = () => {
       {/* Header */}
       <div className='mb-7'>
         <h1 className='text-2xl font-bold text-gray-800'>Admin Dashboard</h1>
-        <p className='text-sm text-gray-500 mt-0.5'>Welcome back — here's what's happening today</p>
+        <p className='text-sm text-gray-500 mt-0.5'>Welcome back - here&apos;s what&apos;s happening today</p>
       </div>
 
       <div className='grid grid-cols-2 xl:grid-cols-4 gap-4 mb-7'>
@@ -107,6 +124,36 @@ const Dashboard = () => {
           icon={<LuActivity className='w-5 h-5 text-blue-500' />}
           sub='Upcoming appointments'
         />
+      </div>
+
+      {/* Impact metrics */}
+      <div className='bg-blue-50/60 border border-blue-100 rounded-2xl p-4 mb-6'>
+        <div className='flex items-center justify-between mb-3'>
+          <p className='text-sm font-semibold text-blue-900'>Impact Metrics (Last 90 Days)</p>
+          <span className='text-xs text-blue-700'>Auto-computed from live backend data</span>
+        </div>
+        <div className='grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3'>
+          <ImpactCard
+            label='Auth/API Reliability'
+            value={formatPct(impactMetrics?.authApiReliability?.apiReliabilityPct)}
+            sub={`Auth: ${formatPct(impactMetrics?.authApiReliability?.authReliabilityPct)}`}
+          />
+          <ImpactCard
+            label='Missed Appointment Reduction'
+            value={formatPct(impactMetrics?.missedAppointmentReduction?.reductionPct)}
+            sub='No-show change: pre-reminder vs post-reminder'
+          />
+          <ImpactCard
+            label='Consultations This Month'
+            value={impactMetrics?.consultationsPerMonth?.currentMonthCompleted ?? '—'}
+            sub={`Month: ${impactMetrics?.consultationsPerMonth?.label || '—'}`}
+          />
+          <ImpactCard
+            label='Booking to Paid Conversion'
+            value={formatPct(impactMetrics?.paidConversion?.bookingToPaidRatePct)}
+            sub={`${impactMetrics?.paidConversion?.paidAppointments ?? 0}/${impactMetrics?.paidConversion?.totalBookedAppointments ?? 0} paid/booked`}
+          />
+        </div>
       </div>
 
       {/* Middle row */}

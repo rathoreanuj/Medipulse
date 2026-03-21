@@ -14,6 +14,7 @@ const AdminContextProvider = (props) => {
     const [appointments, setAppointments] = useState([])
     const [doctors, setDoctors] = useState([])
     const [dashData, setDashData] = useState(false)
+    const [impactMetrics, setImpactMetrics] = useState(null)
     const [notifications, setNotifications] = useState([])
     const [unreadNotifications, setUnreadNotifications] = useState(0)
     const notificationSocketRef = useRef(null)
@@ -179,6 +180,20 @@ const AdminContextProvider = (props) => {
 
     }
 
+    const getImpactMetrics = async (days = 90) => {
+        try {
+            const { data } = await axios.get(`${backendUrl}/api/analytics/admin/impact-metrics?days=${days}`, {
+                headers: { aToken }
+            })
+
+            if (data.success) {
+                setImpactMetrics(data.metrics)
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
     useEffect(() => {
         if (aToken) {
             loadNotifications()
@@ -221,8 +236,10 @@ const AdminContextProvider = (props) => {
         appointments,
         getAllAppointments,
         getDashData,
+        getImpactMetrics,
         cancelAppointment,
         dashData,
+        impactMetrics,
         notifications,
         unreadNotifications,
         loadNotifications,
