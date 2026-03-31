@@ -276,27 +276,23 @@ const Navbar = () => {
   }
 
   return (
-    <div className='flex items-center justify-between text-sm py-4 mb-5 border-b border-b-[#ADADAD]'>
+    <div className='sticky top-0 z-40 flex items-center justify-between text-sm py-4 mb-5 border-b border-slate-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80'>
       <div className='flex items-center gap-4'>
         <img onClick={() => navigate('/')} className='w-44 cursor-pointer' src={assets.logo} alt="" />
         <DoctorSearchBar doctors={doctors || []} />
       </div>
       <ul className='md:flex items-start gap-5 font-medium hidden'>
-        <NavLink to='/' >
-          <li className='py-1'>HOME</li>
-          <hr className='border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden' />
+        <NavLink to='/' className={({ isActive }) => `py-1 px-2 rounded-md transition-colors ${isActive ? 'text-primary bg-blue-50' : 'text-slate-700 hover:text-primary hover:bg-slate-50'}`}>
+          <li>HOME</li>
         </NavLink>
-        <NavLink to='/doctors' >
-          <li className='py-1'>ALL DOCTORS</li>
-          <hr className='border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden' />
+        <NavLink to='/doctors' className={({ isActive }) => `py-1 px-2 rounded-md transition-colors ${isActive ? 'text-primary bg-blue-50' : 'text-slate-700 hover:text-primary hover:bg-slate-50'}`}>
+          <li>ALL DOCTORS</li>
         </NavLink>
-        <NavLink to='/about' >
-          <li className='py-1'>ABOUT</li>
-          <hr className='border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden' />
+        <NavLink to='/about' className={({ isActive }) => `py-1 px-2 rounded-md transition-colors ${isActive ? 'text-primary bg-blue-50' : 'text-slate-700 hover:text-primary hover:bg-slate-50'}`}>
+          <li>ABOUT</li>
         </NavLink>
-        <NavLink to='/contact' >
-          <li className='py-1'>CONTACT</li>
-          <hr className='border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden' />
+        <NavLink to='/contact' className={({ isActive }) => `py-1 px-2 rounded-md transition-colors ${isActive ? 'text-primary bg-blue-50' : 'text-slate-700 hover:text-primary hover:bg-slate-50'}`}>
+          <li>CONTACT</li>
         </NavLink>
       </ul>
 
@@ -389,7 +385,7 @@ const Navbar = () => {
                 </div>
               </>
             )
-            : <button onClick={() => navigate('/login')} className='bg-primary text-white px-8 py-3 rounded-full font-light hidden md:block'>Create account</button>
+            : <button onClick={() => navigate('/login')} className='bg-primary text-white px-7 py-2.5 rounded-full font-medium hidden md:block shadow-[0_10px_20px_-15px_rgba(37,99,235,0.95)] hover:bg-blue-700 hover:translate-y-[-1px] transition-all'>Create account</button>
         }
         <img onClick={() => setShowMenu(true)} className='w-6 md:hidden' src={assets.menu_icon} alt="" />
 
@@ -412,7 +408,7 @@ const Navbar = () => {
                 <p onClick={() => { logout(); setShowMenu(false) }} className='px-4 py-2 cursor-pointer text-red-500'>LOGOUT</p>
               </>
             ) : (
-              <NavLink onClick={() => setShowMenu(false)} to='/login'><p className='px-4 py-2 bg-primary text-white rounded-full mt-2 inline-block'>Create Account</p></NavLink>
+              <NavLink onClick={() => setShowMenu(false)} to='/login'><p className='px-4 py-2 bg-primary hover:bg-blue-700 text-white rounded-full mt-2 inline-block transition-colors'>Create Account</p></NavLink>
             )}
           </ul>
         </div>
