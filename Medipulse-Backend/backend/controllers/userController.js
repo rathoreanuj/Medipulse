@@ -34,8 +34,21 @@ const registerUser = async (req, res) => {
         const userData = { name, email, password: hashedPassword };
         const newUser = new userModel(userData);
         const user = await newUser.save();
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-        res.json({ success: true, token });
+
+        // Generate signup OTP for 2FA verification
+        const otp = crypto.randomInt(100000, 999999).toString();
+        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+        await userModel.findByIdAndUpdate(user._id, { otp, otpExpiry });
+        await sendOtpEmail(user.email, otp, user.name);
+
+        const tempToken = jwt.sign(
+            { id: user._id, purpose: 'otp-verification' },
+            process.env.JWT_SECRET,
+            { expiresIn: '10m' }
+        );
+
+        res.json({ success: true, requiresOtp: true, tempToken, message: 'Verification code sent to your email' });
     } catch (error) {
         logger.error('User controller error', { error: error.message });
         if (error?.code === 11000) {

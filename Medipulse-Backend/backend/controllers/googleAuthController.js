@@ -38,14 +38,7 @@ const googleAuth = async (req, res) => {
         let user = await userModel.findOne({ email });
 
         if (user) {
-            // If this user registered with email/password (not Google), reject the request
-            if (!user.googleId && user.password && !user.password.startsWith('google_oauth_')) {
-                return res.json({
-                    success: false,
-                    message: 'An account with this email already exists. Please log in with your email and password.'
-                });
-            }
-            // Existing Google user — update googleId if missing
+            // Existing account with same email: allow Google login and auto-link if needed.
             if (!user.googleId) {
                 user.googleId = googleId;
                 if (!user.image && picture) user.image = picture;

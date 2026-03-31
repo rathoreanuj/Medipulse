@@ -94,7 +94,13 @@ const Login = () => {
       if (state === 'Sign Up') {
         const fullName = `${firstName} ${lastName}`.trim()
         const { data } = await axios.post(backendUrl + '/api/user/register', { name: fullName, email, password })
-        if (data.success) {
+        if (data.success && data.requiresOtp) {
+          setTempToken(data.tempToken)
+          setState('OTP')
+          setResendTimer(60)
+          toast.success(data.message || 'Verification code sent to your email')
+        } else if (data.success && data.token) {
+          // Backward compatibility in case API returns token directly
           localStorage.setItem('token', data.token)
           setToken(data.token)
         } else {
@@ -174,7 +180,9 @@ const Login = () => {
       if (data.success) {
         localStorage.setItem('token', data.token)
         setToken(data.token)
-        toast.success(state === 'Sign Up' ? 'Signed up with Google!' : 'Signed in with Google!')
+        if (state === 'Login') {
+          toast.success('Signed in with Google!')
+        }
       } else {
         toast.error(data.message)
       }
