@@ -1,4 +1,4 @@
-# Medipulse - AI-Powered Full-Stack Doctor Appointment & Online Video Consultancy Platform
+# Medipulse: AI-Powered Full-Stack Doctor Appointment Booking & Online Video Consultancy Platform
 
 Medipulse is a production-style healthcare appointment system with three apps:
 
