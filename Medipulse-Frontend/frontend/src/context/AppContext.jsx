@@ -16,6 +16,21 @@ const AppContextProvider = (props) => {
     const [unreadNotifications, setUnreadNotifications] = useState(0)
     const notificationSocketRef = useRef(null)
 
+    const clearAuthSession = () => {
+        localStorage.removeItem('token')
+        setToken('')
+        setUserData(false)
+        setNotifications([])
+        setUnreadNotifications(0)
+    }
+
+    const isAuthExpiredMessage = (message = '') => {
+        const normalizedMessage = String(message).toLowerCase()
+        return normalizedMessage.includes('jwt expired') ||
+            normalizedMessage.includes('invalid token') ||
+            normalizedMessage.includes('unauthorized')
+    }
+
     const getDoctosData = async () => {
 
         try {
@@ -43,11 +58,21 @@ const AppContextProvider = (props) => {
             if (data.success) {
                 setUserData(data.userData)
             } else {
+                if (isAuthExpiredMessage(data.message)) {
+                    clearAuthSession()
+                    return
+                }
                 toast.error(data.message)
             }
 
         } catch (error) {
             console.log(error)
+            const statusCode = error?.response?.status
+            const apiMessage = error?.response?.data?.message
+            if (statusCode === 401 || isAuthExpiredMessage(apiMessage)) {
+                clearAuthSession()
+                return
+            }
             toast.error(error.message)
         }
 
