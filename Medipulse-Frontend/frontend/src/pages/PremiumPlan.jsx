@@ -1,11 +1,9 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { AppContext } from '../context/AppContext'
 import axios from 'axios'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { useNavigate } from 'react-router-dom'
-
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
 
 // ─── Payment form ─────────────────────────────────────────────────────────────
 const PaymentForm = ({ clientSecret, onSuccess, onCancel }) => {
@@ -64,6 +62,11 @@ const PremiumPlanInner = () => {
   const [loading, setLoading] = useState(true)
   const [showPayment, setShowPayment] = useState(false)
   const [clientSecret, setClientSecret] = useState('')
+  const stripePromise = useMemo(() => {
+    const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
+    if (!publishableKey) return null
+    return loadStripe(publishableKey, { advancedFraudSignals: false })
+  }, [])
 
   useEffect(() => {
     if (!token) { navigate('/login'); return }

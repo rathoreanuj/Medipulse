@@ -1,11 +1,8 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-
-// Load Stripe with your publishable key
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const PaymentSuccess = ({ onDone }) => (
     <div className="flex flex-col items-center justify-center py-6 text-center animate-fade-in">
@@ -154,6 +151,12 @@ const CheckoutForm = ({ clientSecret, appointmentId, onSuccess, onCancel, backen
 };
 
 const StripeCheckout = ({ clientSecret, appointmentId, onSuccess, onCancel, backendUrl, token }) => {
+    const stripePromise = useMemo(() => {
+        const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+        if (!publishableKey) return null;
+        return loadStripe(publishableKey, { advancedFraudSignals: false });
+    }, []);
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
             <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
