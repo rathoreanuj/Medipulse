@@ -174,7 +174,7 @@ const Login = () => {
       if (data.success) {
         localStorage.setItem('token', data.token)
         setToken(data.token)
-        toast.success('Signed in with Google!')
+        toast.success(state === 'Sign Up' ? 'Signed up with Google!' : 'Signed in with Google!')
       } else {
         toast.error(data.message)
       }
@@ -257,9 +257,8 @@ const Login = () => {
                 className='absolute bottom-0 right-0 h-[78%] w-[84%] object-contain z-10 transition-transform duration-500 hover:scale-[1.02]'
               />
               <div className='absolute inset-x-0 top-0 p-6 md:p-8 text-white z-20'>
-                <p className='text-xs uppercase tracking-[0.28em] text-blue-100/95 mb-3'>Medipulse</p>
-                <h2 className='text-2xl md:text-[2rem] font-semibold leading-tight max-w-md'>
-                  Better care starts with one secure account
+                <h2 className='text-2xl md:text-[2rem] font-bold tracking-[0.12em] leading-tight max-w-md uppercase'>
+                  MEDIPULSE
                 </h2>
                 <p className='text-sm text-blue-50/95 mt-3 max-w-sm leading-relaxed'>
                   Book appointments, chat with doctors, and manage 
@@ -474,9 +473,8 @@ const Login = () => {
               className='absolute bottom-0 right-0 h-[78%] w-[84%] object-contain z-10 transition-transform duration-500 hover:scale-[1.02]'
             />
             <div className='absolute inset-x-0 top-0 p-6 md:p-8 text-white z-20'>
-              <p className='text-xs uppercase tracking-[0.28em] text-blue-100/95 mb-3'>Medipulse</p>
-              <h2 className='text-2xl md:text-[2rem] font-semibold leading-tight max-w-md'>
-                Better care starts with one secure account
+              <h2 className='text-2xl md:text-[2rem] font-bold tracking-[0.12em] leading-tight max-w-md uppercase'>
+                MEDIPULSE
               </h2>
               <p className='text-sm text-blue-50/95 mt-3 max-w-sm leading-relaxed'>
                 Book appointments, chat with doctors, and manage your health journey in one place.

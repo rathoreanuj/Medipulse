@@ -23,6 +23,12 @@ const registerUser = async (req, res) => {
         if (password.length < 8) {
             return res.json({ success: false, message: "Please enter a strong password" });
         }
+
+        const existingUser = await userModel.findOne({ email });
+        if (existingUser) {
+            return res.json({ success: false, message: 'User with this email already exists' });
+        }
+
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
         const userData = { name, email, password: hashedPassword };
@@ -32,6 +38,9 @@ const registerUser = async (req, res) => {
         res.json({ success: true, token });
     } catch (error) {
         logger.error('User controller error', { error: error.message });
+        if (error?.code === 11000) {
+            return res.json({ success: false, message: 'User with this email already exists' });
+        }
         res.json({ success: false, message: error.message });
     }
 };
