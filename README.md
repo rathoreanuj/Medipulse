@@ -8,8 +8,6 @@ Medipulse is a production-style healthcare appointment system with three apps:
 
 It supports appointment booking, online payments, OTP login, Google auth, realtime chat, realtime notifications, WebRTC video consultations, AI-based symptom triage, AI consultation summaries, subscriptions, and revenue analytics.
 
-> **Architecture deep-dive (interview-ready):** See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed component explanations, auth flow, scalability notes, and a 1–2 minute interview answer.
-
 ## Live Deployments
 
 - Patient App: https://medipulse-frontend.onrender.com/
