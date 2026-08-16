@@ -8,11 +8,338 @@ Medipulse is a production-style healthcare appointment system with three apps:
 
 It supports appointment booking, online payments, OTP login, Google auth, realtime chat, realtime notifications, WebRTC video consultations, AI-based symptom triage, AI consultation summaries, subscriptions, and revenue analytics.
 
+> **Architecture deep-dive (interview-ready):** See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed component explanations, auth flow, scalability notes, and a 1–2 minute interview answer.
+
 ## Live Deployments
 
 - Patient App: https://medipulse-frontend.onrender.com/
 - Admin/Doctor App: https://medipulse-admin.onrender.com/
 - Backend API: https://medipulse-backend.onrender.com/
+
+## Architecture Diagrams
+
+### High-Level Architecture
+
+Three-tier system: two React frontends, one Node.js backend, MongoDB, and external services.
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           CLIENT LAYER                                   │
+│  ┌──────────────────────┐          ┌──────────────────────────────┐     │
+│  │  Patient SPA (React) │          │  Admin/Doctor SPA (React)    │     │
+│  │  Browse, book, pay,  │          │  Manage doctors, appointments│     │
+│  │  chat, video call    │          │  chat, video, revenue stats  │     │
+│  └──────────┬───────────┘          └──────────────┬───────────────┘     │
+└─────────────┼──────────────────────────────────────┼─────────────────────┘
+              │  REST (axios) + Socket.IO            │
+              ▼                                      ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         BACKEND LAYER (Node.js)                          │
+│  ┌─────────────────────────────────────────────────────────────────┐    │
+│  │  Express REST API  (/api/user, /api/doctor, /api/admin, ...)    │    │
+│  │  + Socket.IO server (chat, notifications, WebRTC signaling)     │    │
+│  │  + Background jobs (reminders, revenue alerts)                  │    │
+│  └─────────────────────────────────────────────────────────────────┘    │
+└─────────────┬───────────────────────────────────────────────────────────┘
+              │
+              ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    DATA & EXTERNAL SERVICES                              │
+│  MongoDB (Mongoose)  │  Stripe  │  Cloudinary  │  Gmail (Nodemailer)   │
+│                      │  Google OAuth  │  Google Gemini AI               │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### System Architecture
+
+```mermaid
+flowchart TB
+    subgraph Clients["Client Layer"]
+        PF["Patient Frontend<br/>(React + Vite :5173)"]
+        AD["Admin/Doctor Frontend<br/>(React + Vite :5174)"]
+    end
+
+    subgraph Backend["Backend (Node.js + Express :4000)"]
+        API["REST API<br/>/api/*"]
+        WS["Socket.IO Server"]
+        JOBS["Background Jobs<br/>(reminders, revenue)"]
+        MW["Middleware<br/>CORS, rate limit, JWT auth, metrics"]
+    end
+
+    subgraph Data["Data Layer"]
+        MDB[("MongoDB<br/>(Mongoose)")]
+    end
+
+    subgraph External["External Services"]
+        STRIPE["Stripe<br/>(payments)"]
+        CLD["Cloudinary<br/>(images)"]
+        EMAIL["Gmail / Nodemailer<br/>(OTP, reminders)"]
+        GOOGLE["Google OAuth<br/>(patient login)"]
+        GEMINI["Google Gemini AI<br/>(symptom check, summaries)"]
+    end
+
+    PF -->|"axios REST + JWT header"| API
+    AD -->|"axios REST + JWT header"| API
+    PF -->|"Socket.IO"| WS
+    AD -->|"Socket.IO"| WS
+
+    API --> MW --> MDB
+    WS --> MDB
+    JOBS --> MDB
+
+    API --> STRIPE
+    API --> CLD
+    API --> EMAIL
+    API --> GOOGLE
+    API --> GEMINI
+    WS --> EMAIL
+```
+
+### Patient Login Flow (Email + OTP)
+
+```mermaid
+sequenceDiagram
+    participant P as Patient Frontend
+    participant B as Backend API
+    participant DB as MongoDB
+    participant E as Gmail (Nodemailer)
+
+    P->>B: POST /api/user/login {email, password}
+    B->>DB: Find user, bcrypt.compare(password)
+    B->>DB: Save OTP + expiry (10 min)
+    B->>E: Send OTP email
+    B-->>P: { success, tempToken }
+
+    P->>B: POST /api/user/verify-otp {otp, tempToken}
+    B->>B: Verify tempToken (purpose: otp-verification)
+    B->>DB: Validate OTP
+    B->>B: Sign JWT { id: userId }
+    B-->>P: { success, token }
+    P->>P: localStorage.setItem('token', token)
+```
+
+### Book Appointment Flow (Online Payment)
+
+```mermaid
+sequenceDiagram
+    participant P as Patient Frontend
+    participant B as Backend API
+    participant DB as MongoDB
+    participant S as Stripe
+
+    P->>B: POST /api/user/book-appointment<br/>{docId, slotDate, slotTime, paymentMode: 'online'}
+    Note over B,DB: Atomic findOneAndUpdate upsert<br/>status = 'reserved'
+    B-->>P: { appointmentId, amount }
+
+    P->>B: POST /api/payment/create-payment-intent {appointmentId}
+    B->>S: stripe.paymentIntents.create (INR)
+    B-->>P: { clientSecret }
+
+    P->>S: Stripe.js confirms payment
+    P->>B: POST /api/payment/verify-payment<br/>{paymentIntentId, appointmentId}
+    B->>S: stripe.paymentIntents.retrieve
+    alt Payment succeeded
+        B->>DB: status='booked', payment=true, update slots_booked
+        B-->>P: { success: true }
+    else Payment failed
+        B->>DB: status='cancelled', free slot
+        B-->>P: { success: false }
+    end
+```
+
+Cash booking skips Stripe — `book-appointment` immediately sets `status: 'booked'`.
+
+### Real-Time Chat Flow
+
+```mermaid
+sequenceDiagram
+    participant P as Patient
+    participant D as Doctor
+    participant WS as Socket.IO
+    participant DB as MongoDB
+    participant E as Email
+
+    P->>WS: join-room {appointmentId, token}
+    WS->>DB: Verify appointment.userId === patient
+    WS-->>P: joined
+
+    P->>WS: send-message {message}
+    WS->>DB: Save to chat collection
+    WS->>WS: Broadcast new-message to room
+    WS->>E: Email notification to doctor (async)
+    WS->>WS: Push notification-created to doctor room
+```
+
+### Video Consultation Flow (WebRTC)
+
+```mermaid
+sequenceDiagram
+    participant P as Patient
+    participant D as Doctor
+    participant B as Backend REST
+    participant WS as Socket.IO
+
+    P->>B: POST /api/video/join-room {appointmentId}
+    B->>B: Validate JWT + appointment ownership
+    B-->>P: { videoRoomId }
+
+    P->>WS: join-video-room
+    D->>WS: join-video-room
+    Note over P,D: WebRTC signaling via Socket.IO
+    P->>WS: video-offer
+    WS->>D: video-offer
+    D->>WS: video-answer
+    WS->>P: video-answer
+    Note over P,D: ICE candidates exchanged
+    Note over P,D: Peer-to-peer video stream (browser WebRTC)
+
+    D->>B: POST /api/video/generate-summary
+    B->>B: Google Gemini AI → consultation summary
+    B->>DB: Save summary on appointment
+```
+
+### Database Schema
+
+```mermaid
+erDiagram
+    USER ||--o{ APPOINTMENT : books
+    DOCTOR ||--o{ APPOINTMENT : receives
+    APPOINTMENT ||--o| REVIEW : "one review max"
+    APPOINTMENT ||--o{ CHAT : "messages in"
+    USER ||--o{ NOTIFICATION : receives
+    DOCTOR ||--o{ NOTIFICATION : receives
+
+    USER {
+        string _id PK
+        string email UK
+        string password "bcrypt hashed"
+        string plan "free | premium"
+        string googleId
+        string otp
+    }
+
+    DOCTOR {
+        string _id PK
+        string email UK
+        string speciality
+        number fees
+        object slots_booked "date -> [times]"
+        string plan "free | pro"
+        number averageRating
+    }
+
+    APPOINTMENT {
+        string _id PK
+        string userId FK
+        string docId FK
+        string slotDate
+        string slotTime
+        object userData "snapshot"
+        object docData "snapshot"
+        string status "reserved | booked | cancelled"
+        boolean payment
+        string paymentMode "cash | online"
+        string consultationType "in-person | video"
+        string videoRoomId
+        object consultationSummary
+    }
+
+    REVIEW {
+        string appointmentId UK
+        string userId
+        string docId
+        number rating "1-5"
+        string comment
+    }
+
+    CHAT {
+        string appointmentId
+        string senderId
+        string senderType "user | doctor"
+        string message
+    }
+
+    NOTIFICATION {
+        string recipientType "user | doctor | admin"
+        string recipientId
+        string type
+        boolean isRead
+    }
+
+    ANALYTICS_EVENT {
+        string category "api | auth"
+        string endpoint
+        boolean success
+    }
+```
+
+### API Request Lifecycle
+
+```
+Patient clicks "Book Appointment"
+        │
+        ▼
+┌──────────────────────────────────────────────────┐
+│ 1. FRONTEND (Appointment.jsx)                    │
+│    axios.post(backendUrl + '/api/user/book-...') │
+│    headers: { token: localStorage.getItem(...) } │
+└──────────────────────┬───────────────────────────┘
+                       ▼
+┌──────────────────────────────────────────────────┐
+│ 2. EXPRESS MIDDLEWARE CHAIN                      │
+│    CORS → express.json() → globalLimiter         │
+│    → apiMetricsTracker → authUser (JWT verify)   │
+└──────────────────────┬───────────────────────────┘
+                       ▼
+┌──────────────────────────────────────────────────┐
+│ 3. ROUTE → CONTROLLER                            │
+│    userRoute.js → userController.bookAppointment │
+│    Business logic + MongoDB operations           │
+└──────────────────────┬───────────────────────────┘
+                       ▼
+┌──────────────────────────────────────────────────┐
+│ 4. RESPONSE                                      │
+│    res.json({ success: true/false, ...data })    │
+│    (metrics middleware logs to analyticsEvent)   │
+└──────────────────────┬───────────────────────────┘
+                       ▼
+┌──────────────────────────────────────────────────┐
+│ 5. FRONTEND handles response                     │
+│    success → toast + redirect                    │
+│    failure → show error message                  │
+└──────────────────────────────────────────────────┘
+```
+
+### Deployment Architecture
+
+```mermaid
+flowchart LR
+    subgraph Vercel["Vercel (or Render)"]
+        PF["Patient SPA<br/>medipulse-frontend"]
+        AD["Admin SPA<br/>medipulse-admin"]
+    end
+
+    subgraph Render["Render"]
+        BE["Backend API + Socket.IO<br/>medipulse-backend.onrender.com"]
+    end
+
+    subgraph Cloud["Managed Services"]
+        MDB[("MongoDB Atlas")]
+        STRIPE["Stripe"]
+        CLD["Cloudinary"]
+        GMAIL["Gmail SMTP"]
+        GEMINI["Google Gemini API"]
+    end
+
+    PF -->|"HTTPS REST + WSS"| BE
+    AD -->|"HTTPS REST + WSS"| BE
+    BE --> MDB
+    BE --> STRIPE
+    BE --> CLD
+    BE --> GMAIL
+    BE --> GEMINI
+    BE -->|"keep-alive ping every 14min"| BE
+```
 
 ## What Is Implemented
 
